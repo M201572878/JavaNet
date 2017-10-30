@@ -6,7 +6,9 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class ServerThread extends Thread
 {
@@ -16,6 +18,7 @@ public class ServerThread extends Thread
 	public ObjectInputStream m_objInputStream = null;
 	public boolean m_continue = true;
 	public static HashMap m_userInfoMap = new HashMap();
+	public static List m_userOnline = new ArrayList();
 	
 	
 	public ServerThread(Socket socket)
@@ -52,6 +55,7 @@ public class ServerThread extends Thread
 		}
 	}
 	
+	
 	public void DealLogin()
 	{
 		System.out.println("login»Ø¸´");
@@ -59,6 +63,7 @@ public class ServerThread extends Thread
 		if(m_userInfoMap.containsKey(m_operationObj.m_user) &&
 				correctUserInfo.m_password.equals(m_operationObj.m_password))
 		{
+			m_userOnline.add(m_operationObj.m_user);
 			ResponseToClient("µÇÂ½³É¹¦");
 		}
 		else
@@ -132,6 +137,19 @@ public class ServerThread extends Thread
 			else if(m_operationObj.m_operationName.equals("findpassword"))
 			{
 				DealFindPassWord();
+			}
+			else if(m_operationObj.m_operationName.equals("logoff"))
+			{
+				if(m_userOnline.contains(m_operationObj.m_user))
+					m_userOnline.remove(m_operationObj.m_user);
+				try {
+					m_socket.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				break;
+				
 			}
 		}
 	}

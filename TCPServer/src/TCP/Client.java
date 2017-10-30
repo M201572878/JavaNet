@@ -55,6 +55,7 @@ public class Client {
 			Scanner scanner = new Scanner(System.in);
 			boolean runContinue = true;
 			Operation operationObject = new Operation();
+			String currentLoginUser = null;
 			while(runContinue){
 				System.out.println("选择操作类型：1.注册 2.登陆 3.退出4.密码找回");
 				int operationType = scanner.nextInt();
@@ -90,8 +91,18 @@ public class Client {
 					osw.writeUnshared(operationObject);
 					serverResp = br.readLine();
 					System.out.println(serverResp);
+					if(serverResp.equals("登陆成功"))
+					{
+						currentLoginUser = operationObject.m_user;
+					}
 					break;
 				case 3:
+					if(currentLoginUser != null)
+					{
+						operationObject.m_operationName = "logoff";
+						operationObject.m_user = currentLoginUser;
+						osw.writeUnshared(operationObject);
+					}
 					runContinue = false;
 					break;
 				case 4:
