@@ -71,6 +71,7 @@ public class Client {
 					if(null != userInfo)
 					{
 						operationObject.m_userInfo = userInfo;
+						operationObject.m_user = userInfo.m_userName;
 						//发送给服务器
 						osw.writeUnshared(operationObject);
 						//osw.writeObject(null);
@@ -97,12 +98,13 @@ public class Client {
 					}
 					break;
 				case 3:
+					operationObject.m_operationName = "logoff";
 					if(currentLoginUser != null)
 					{
-						operationObject.m_operationName = "logoff";
 						operationObject.m_user = currentLoginUser;
-						osw.writeUnshared(operationObject);
+						
 					}
+					osw.writeUnshared(operationObject);
 					runContinue = false;
 					break;
 				case 4:
@@ -112,6 +114,7 @@ public class Client {
 					if(null != userInfo)
 					{
 						operationObject.m_userInfo = userInfo;
+						operationObject.m_user = userInfo.m_userName;
 						//发送给服务器
 						osw.writeUnshared(operationObject);
 						//osw.writeObject(null);
