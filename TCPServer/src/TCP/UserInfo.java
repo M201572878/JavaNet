@@ -1,6 +1,8 @@
 package TCP;
 
-public class UserInfo {
+import java.io.Serializable;
+
+public class UserInfo implements Serializable{
 	public String m_userName = null;
 	public String m_password = null;
 	public String m_quessionAnswer = null;

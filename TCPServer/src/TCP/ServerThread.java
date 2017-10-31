@@ -17,7 +17,7 @@ public class ServerThread extends Thread
 	public Operation m_operationObj = null;
 	public ObjectInputStream m_objInputStream = null;
 	public boolean m_continue = true;
-	public static HashMap m_userInfoMap = new HashMap();
+	public static HashMap m_userInfoMap = new HashMap<String, UserInfo>();
 	public static List m_userOnline = new ArrayList();
 	
 	
