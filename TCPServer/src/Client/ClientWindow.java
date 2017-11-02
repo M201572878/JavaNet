@@ -1,6 +1,7 @@
 package Client;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -13,6 +14,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -28,12 +30,19 @@ public class ClientWindow extends JFrame {
 	
 	ClientWindow()
 	{
-		m_frame.setSize(350, 300);
+		m_frame.setSize(350, 200);
+		m_frame.setResizable(false);
+		m_frame.setLocation(500, 500);
         m_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         m_frame.add(m_mainPanel);
         m_mainPanel.setLayout(m_mainPanelLayout);
         m_mainPanel.add(new LoginPanel());
         m_frame.setVisible(true);
+        
+        JFrame frame = new JFrame("Login Example2");
+        frame.setSize(350, 300);
+        frame.add(new ChatPanel());
+        frame.setVisible(true);
 	}
 
 	public static void main(String[] args) {
@@ -44,6 +53,8 @@ public class ClientWindow extends JFrame {
         //JPanel panel = new JPanel();    
         // ÃÌº”√Ê∞Â
         ClientWindow clientWindow = new ClientWindow(); 
+        
+        
 //        frame.add(clientWindow.m_registerPanel);
 //        clientWindow.m_registerPanel.setVisible(false);
 //        clientWindow.m_loginPanel.setVisible(true);
@@ -61,18 +72,21 @@ public class ClientWindow extends JFrame {
 		System.out.println(action);
 		if(action.equals("register"))
 		{
+			m_frame.resize(350, 300);
 			m_mainPanel.removeAll();
 			m_mainPanel.add(new RegisterPanel("register"));
 			m_mainPanel.validate();
 		}
 		else if(action.equals("findpassword"))
 		{
+			m_frame.resize(350, 300);
 			m_mainPanel.removeAll();
 			m_mainPanel.add(new RegisterPanel("findpassword"));
 			m_mainPanel.validate();
 		}
 		else if(action.equals("login"))
 		{
+			m_frame.resize(350, 180);
 			System.out.println("return to login");
 			m_mainPanel.removeAll();
 			m_mainPanel.add(new LoginPanel());
@@ -89,21 +103,32 @@ public class ClientWindow extends JFrame {
 		} 
 		
 		ChatPanel() {
-			String[] words= { "quick", "brown", "hungry", "wild","quick", "brown", "hungry", "wild","quick", "brown", "hungry", "wild"};
+			setLayout(null);
+			String[] words= { "quick", "brown", "hungry","quick", "brown", "hungry", "wild","quick", "brown", "hungry", "wild","quick", "brown", "hungry", "wild"};
 			JList<String> wordList = new JList<>(words);
 			wordList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-			wordList.setBounds(50, 50, 100, 100);
+//			wordList.setPreferredSize(new Dimension(40,180));
+//			wordList.setVisibleRowCount(8);
+//			wordList.setBounds(250, 0, 100, 200);
 			wordList.addListSelectionListener(new ListSelectionListener() {
 				
 				@Override
 				public void valueChanged(ListSelectionEvent e) {
 					// TODO Auto-generated method stub
 					System.out.println(wordList.getSelectedValue());
+					wordList.setSelectionBackground(new Color(0xFF0000));
 				}
 			});
 			JScrollPane scrollPane = new JScrollPane(wordList);
-			scrollPane.setBounds(0, 0, 200, 200);
+//			scrollPane.setSize(100,200);
+			scrollPane.setBounds(200, 0, 150, 200);
+			JTextArea jTextArea = new JTextArea(10, 15);
+			jTextArea.setBounds(0, 0, 200, 200);
+			JTextArea inputArea = new JTextArea(10, 15);
+			inputArea.setBounds(0, 205, 350, 90);
 			add(scrollPane);
+			add(jTextArea);
+			add(inputArea);
 		}
 		
 	}
