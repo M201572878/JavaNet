@@ -31,7 +31,7 @@ public class Client1 {
 			OutputStream out = socket.getOutputStream();
 			//OutputStreamWriter osw = new OutputStreamWriter(out, "UTF-8");
 			ObjectOutputStream osw = new ObjectOutputStream(out);
-			PrintWriter pw = new PrintWriter(osw, true);
+//			PrintWriter pw = new PrintWriter(osw, true);
 			
 			InputStream in = socket.getInputStream();
 			InputStreamReader isw = new InputStreamReader(in, "UTF-8");

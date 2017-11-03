@@ -1,8 +1,10 @@
 package TCP;
 
 import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -46,18 +48,21 @@ public class Client {
 			OutputStream out = socket.getOutputStream();
 			//OutputStreamWriter osw = new OutputStreamWriter(out, "UTF-8");
 			ObjectOutputStream osw = new ObjectOutputStream(out);
-			PrintWriter pw = new PrintWriter(osw, true);
+//			PrintWriter pw = new PrintWriter(osw, true);
 			
 			InputStream in = socket.getInputStream();
-			InputStreamReader isw = new InputStreamReader(in, "UTF-8");
-			BufferedReader  br =  new BufferedReader(isw);
+//			InputStreamReader isw = new InputStreamReader(in, "UTF-8");
+//			BufferedReader  br =  new BufferedReader(isw);
+			ObjectInputStream isw = new ObjectInputStream(in);
+			DataInputStream inStr = new DataInputStream(in);
 			//创建Scanner读取用户输入内容
 			Scanner scanner = new Scanner(System.in);
 			boolean runContinue = true;
 			Operation operationObject = new Operation();
+			ServerReply serverReplyObject = new ServerReply();
 			String currentLoginUser = null;
 			while(runContinue){
-				System.out.println("选择操作类型：1.注册 2.登陆 3.退出4.密码找回");
+				System.out.println("选择操作类型：1.注册 2.登陆 3.退出4.密码找回5.发送消息");
 				int operationType = scanner.nextInt();
 				scanner.nextLine();
 				UserInfo userInfo;
@@ -76,8 +81,9 @@ public class Client {
 						osw.writeUnshared(operationObject);
 						//osw.writeObject(null);
 						//接受服务器的回复
-						serverResp = br.readLine();
-						System.out.println(serverResp);
+//						serverResp = br.readLine();
+						serverReplyObject = (ServerReply) isw.readObject();
+						System.out.println(serverReplyObject.m_responseStr);
 					}
 					else
 					{
@@ -90,12 +96,16 @@ public class Client {
 					operationObject.m_user = scanner.nextLine();
 					operationObject.m_password = scanner.nextLine();
 					osw.writeUnshared(operationObject);
-					serverResp = br.readLine();
-					System.out.println(serverResp);
-					if(serverResp.equals("登陆成功"))
+//					serverResp = br.readLine();
+//					System.out.println(serverResp);
+					serverReplyObject = (ServerReply) isw.readObject();
+					System.out.println(serverReplyObject.m_responseStr);
+					if(serverReplyObject.m_responseStr.equals("登陆成功"))
 					{
 						currentLoginUser = operationObject.m_user;
 					}
+					inStr.readUTF();
+//					这里不会写了emmmm
 					break;
 				case 3:
 					operationObject.m_operationName = "logoff";
@@ -119,14 +129,37 @@ public class Client {
 						osw.writeUnshared(operationObject);
 						//osw.writeObject(null);
 						//接受服务器的回复
-						serverResp = br.readLine();
-						System.out.println(serverResp);
+//						serverResp = br.readLine();
+//						System.out.println(serverResp);
+						serverReplyObject = (ServerReply) isw.readObject();
+						System.out.println(serverReplyObject.m_responseStr);
 					}
 					else
 					{
 						System.out.println("输入不一致");
 					}
 					break;
+				case 5:
+				{
+					System.out.println("请输入想发送消息的用户名");
+					operationObject.m_wantSendUser = scanner.nextLine();
+					osw.writeUnshared(operationObject);
+					serverReplyObject = (ServerReply) isw.readObject();
+					System.out.println(serverReplyObject.m_responseStr);
+					if(serverReplyObject.m_wantSendUserRegistered = false ){
+						;
+//						用户没有注册就空语句
+					}
+					else if(serverReplyObject.m_wantSendUserState = false ){
+						operationObject.m_wantSendMessage = scanner.nextLine();
+						osw.writeUnshared(operationObject);
+					}
+					else {
+//						在线消息处理
+					}
+
+					
+				}
 				default:
 					break;
 				}
