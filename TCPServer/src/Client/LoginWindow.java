@@ -41,10 +41,6 @@ public class LoginWindow extends JFrame {
         m_mainPanel.add(new LoginPanel());
         m_frame.setVisible(true);
         
-        JFrame frame = new JFrame("Login Example2");
-        frame.setSize(350, 300);
-        frame.add(new ChatPanel());
-        frame.setVisible(true);
 	}
 
 	public static void main(String[] args) {
@@ -218,7 +214,7 @@ public class LoginWindow extends JFrame {
 		JPasswordField m_secondAnswerInput = new JPasswordField(20);
 		JButton m_returnButton = new JButton("Return");
 		JButton m_funcButton = new JButton("");
-		JLabel m_promptLabel = new JLabel("");
+		JLabel m_promptLabel = new JLabel("", JLabel.CENTER);
 		
 		@Override
         public void actionPerformed(ActionEvent e) { 
@@ -275,7 +271,7 @@ public class LoginWindow extends JFrame {
         	m_returnButton.addActionListener(this);
         	m_funcButton.setBounds(210,200,100,30);
         	m_funcButton.addActionListener(this);
-        	m_promptLabel.setBounds(50,230,100,30);
+        	m_promptLabel.setBounds(0,230,350,30);
         	m_promptLabel.setVisible(false);
         	add(m_userLabel);
         	add(m_userInput);
