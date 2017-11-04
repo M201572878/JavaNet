@@ -5,6 +5,8 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.management.openmbean.OpenMBeanOperationInfo;
 import javax.swing.JButton;
@@ -23,12 +25,12 @@ import javax.swing.event.ListSelectionListener;
 import TCP.Operation;
 import TCP.UserInfo;
 
-public class ClientWindow extends JFrame {
+public class LoginWindow extends JFrame {
 	public JFrame m_frame = new JFrame("Login Example");
 	public JPanel m_mainPanel = new JPanel();   
 	public CardLayout m_mainPanelLayout = new CardLayout();
 	
-	ClientWindow()
+	LoginWindow()
 	{
 		m_frame.setSize(350, 200);
 		m_frame.setResizable(false);
@@ -52,7 +54,7 @@ public class ClientWindow extends JFrame {
          */
         //JPanel panel = new JPanel();    
         // Ìí¼ÓÃæ°å
-        ClientWindow clientWindow = new ClientWindow(); 
+        LoginWindow clientWindow = new LoginWindow(); 
         
         
 //        frame.add(clientWindow.m_registerPanel);
@@ -114,10 +116,22 @@ public class ClientWindow extends JFrame {
 				
 				@Override
 				public void valueChanged(ListSelectionEvent e) {
-					// TODO Auto-generated method stub
 					System.out.println(wordList.getSelectedValue());
-					wordList.setSelectionBackground(new Color(0xFF0000));
+					
 				}
+			});
+			wordList.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent mouseEvent) {
+	                JList theList = (JList) mouseEvent.getSource();
+	                if (mouseEvent.getClickCount() == 2) {
+	                    int index = theList.locationToIndex(mouseEvent.getPoint());
+	                    if (index >= 0) {
+//	                        Object o = theList.getModel().getElementAt(index);
+//	                        field.setText(o.toString());
+	                    	wordList.setSelectionBackground(new Color(0xFF0000));
+	                    }
+	                }
+	            }
 			});
 			JScrollPane scrollPane = new JScrollPane(wordList);
 //			scrollPane.setSize(100,200);
