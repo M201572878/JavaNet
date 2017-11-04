@@ -42,28 +42,6 @@ public class LoginWindow extends JFrame {
         m_frame.setVisible(true);
         
 	}
-
-	public static void main(String[] args) {
-        /* 创建面板，这个类似于 HTML 的 div 标签
-         * 我们可以创建多个面板并在 JFrame 中指定位置
-         * 面板中我们可以添加文本字段，按钮及其他组件。
-         */
-        //JPanel panel = new JPanel();    
-        // 添加面板
-        LoginWindow clientWindow = new LoginWindow(); 
-        
-        
-//        frame.add(clientWindow.m_registerPanel);
-//        clientWindow.m_registerPanel.setVisible(false);
-//        clientWindow.m_loginPanel.setVisible(true);
-        /* 
-         * 调用用户定义的方法并添加组件到面板
-         */
-//        clientWindow.InitLoginPanel();
-//        clientWindow.InitRegisterPanel();
-
-        // 设置界面可见
-	}
 	
 	private void Repain(String action)
 	{
