@@ -4,7 +4,9 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Array;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,26 +18,30 @@ public class ServerThread extends Thread
 	public BufferedWriter m_bufferWriter = null;
 	public Operation m_operationObj = null;
 	public ObjectInputStream m_objInputStream = null;
+	public ObjectOutputStream m_objOutputStream = null;
 	public boolean m_continue = true;
-	public static HashMap m_userInfoMap = new HashMap<String, UserInfo>();
-	public static List m_userOnline = new ArrayList();
+	public static HashMap<String, UserInfo> m_userInfoMap = new HashMap<String, UserInfo>();
+	public static HashMap m_userOnlineMap = new HashMap<String, OnlineUserInfo>();
+	public HashMap m_offlineMsgMap = new HashMap<String, List<String>>();
 	
+	private class OnlineUserInfo{
+		public String m_ip = null;
+		public String m_udpIp = null;
+		public int m_port = 0;
+		public int m_udpPort = 0;
+		
+		OnlineUserInfo(String ip, int port, String udpIp, int udpPort)
+		{
+			m_ip = ip;
+			m_port = port;
+			m_udpIp = udpIp;
+			m_udpPort = udpPort;
+		}
+	}
 	
 	public ServerThread(Socket socket)
 	{
 		m_socket = socket;
-	}
-	
-	public void ResponseToClient(String responseStr)
-	{
-		try {
-			m_bufferWriter.write(responseStr);
-			m_bufferWriter.newLine();
-			m_bufferWriter.flush();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 	}
 	
 	public void DealRegister()
@@ -44,14 +50,29 @@ public class ServerThread extends Thread
 		if(m_userInfoMap.containsKey(m_operationObj.m_user))
 		{
 			System.out.println("register回复");
-			ResponseToClient("注册失败，已存在的账号");
+			Operation operation = new Operation();
+			operation.m_operationName = "registerFail";
+			operation.m_detail = "已存在的用户";
+			try {
+				m_objOutputStream.writeObject(operation);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		else
 		{
 			System.out.println("register回复2");
 			m_userInfoMap.put(m_operationObj.m_user, m_operationObj.m_userInfo);
 //			m_userInfoMap.put(m_operationObj.m_user, m_operationObj.m_password);
-			ResponseToClient("注册成功，请登陆");
+			Operation operation = new Operation();
+			operation.m_operationName = "registerSuccess";
+			try {
+				m_objOutputStream.writeObject(operation);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -63,13 +84,97 @@ public class ServerThread extends Thread
 		if(m_userInfoMap.containsKey(m_operationObj.m_user) &&
 				correctUserInfo.m_password.equals(m_operationObj.m_password))
 		{
-			m_userOnline.add(m_operationObj.m_user);
-			ResponseToClient("登陆成功");
+			m_userOnlineMap.put(m_operationObj.m_user, new OnlineUserInfo(m_operationObj.m_ip, m_operationObj.m_port,
+					m_operationObj.m_udpIp, m_operationObj.m_udpPort));
+			Operation operation = new Operation();
+			operation.m_operationName = "loginSuccess";
+			try {
+				m_objOutputStream.writeObject(operation);
+				//用户列表
+				Operation operation2 = new Operation();
+				operation2.m_operationName = "userListRsp";
+				operation2.m_users = "";
+				operation2.m_userStates = "";
+				for (String key: m_userInfoMap.keySet()) { 
+					operation2.m_users += key;
+					operation2.m_users += "\n";
+					if(m_userOnlineMap.containsKey(key))
+					{
+						operation2.m_userStates += "online";
+					}
+					else
+					{
+						operation2.m_userStates += "offline";
+					}
+					operation2.m_userStates += "\n";
+				}  
+				m_objOutputStream.writeObject(operation2);
+				//离线消息
+				Operation operation3 = new Operation();
+				operation3.m_operationName = "offlineMsgRsp";
+				operation3.m_msg = "";
+				if(m_offlineMsgMap.containsKey(m_operationObj.m_user))
+				{
+					for(String msg: (ArrayList<String>)m_offlineMsgMap.get(m_operationObj.m_user))
+					{
+						operation3.m_msg += msg;
+						operation3.m_msg += "\n";
+					}
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		else
 		{
-			ResponseToClient("错误的用户名或密码");
+			Operation operation = new Operation();
+			operation.m_operationName = "loginFail";
+			operation.m_detail = "不正确的账号或密码";
+			try {
+				m_objOutputStream.writeObject(operation);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+	}
+	
+	public void DealLogoff()
+	{
+		if(m_userOnlineMap.containsKey(m_operationObj.m_user))
+			m_userOnlineMap.remove(m_operationObj.m_user);
+		try {
+			m_socket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void DealGetOtherClientAddr()
+	{
+		Operation operation = new Operation();
+		operation.m_operationName = "getOtherClientAddrRsp";
+		OnlineUserInfo onlineUserInfo = (OnlineUserInfo) m_userOnlineMap.get(m_operationObj.m_dstUser);
+		operation.m_ip = onlineUserInfo.m_ip;
+		operation.m_port = onlineUserInfo.m_port;
+		try {
+			m_objOutputStream.writeObject(operation);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void DealSendOfflineMsg()
+	{
+		if(!m_offlineMsgMap.containsKey(m_operationObj.m_dstUser))
+		{
+			m_offlineMsgMap.put(m_operationObj.m_dstUser, new ArrayList<String>());
+		}
+		ArrayList<String> list = (ArrayList<String>) m_offlineMsgMap.get(m_operationObj.m_dstUser);
+		list.add(m_operationObj.m_msg);
 	}
 	
 	public void DealFindPassWord()
@@ -81,18 +186,42 @@ public class ServerThread extends Thread
 			UserInfo newUserInfo = m_operationObj.m_userInfo;
 			if(correctUserInfo.m_quessionAnswer.equals(newUserInfo.m_quessionAnswer))
 			{
-				ResponseToClient("密码找回成功,请登陆");
 				m_userInfoMap.replace(m_operationObj.m_user, newUserInfo);
+				Operation operation = new Operation();
+				operation.m_operationName = "findpasswordSuccess";
+				operation.m_detail = "不正确的账号或密码";
+				try {
+					m_objOutputStream.writeObject(operation);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			else
 			{
-				ResponseToClient("问题答案错误，密码找回失败");
+				Operation operation = new Operation();
+				operation.m_operationName = "findpasswordFail";
+				operation.m_detail = "密保答案错误";
+				try {
+					m_objOutputStream.writeObject(operation);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 		}
 		else
 		{
-			ResponseToClient("不存在的用户，密码找回失败");
+			Operation operation = new Operation();
+			operation.m_operationName = "findpasswordFail";
+			operation.m_detail = "不存在的用户";
+			try {
+				m_objOutputStream.writeObject(operation);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -100,7 +229,7 @@ public class ServerThread extends Thread
 	{
 		try {
 			m_objInputStream = new ObjectInputStream(m_socket.getInputStream());
-			m_bufferWriter = new BufferedWriter (new OutputStreamWriter(m_socket.getOutputStream(), "UTF-8"));
+			m_objOutputStream = new ObjectOutputStream(m_socket.getOutputStream());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -138,18 +267,18 @@ public class ServerThread extends Thread
 			{
 				DealFindPassWord();
 			}
+			else if(m_operationObj.m_operationName.equals("getOtherClientAddr"))
+			{
+				DealGetOtherClientAddr();
+			}
+			else if(m_operationObj.m_operationName.equals("sendOfflineMsg"))
+			{
+				DealSendOfflineMsg();
+			}
 			else if(m_operationObj.m_operationName.equals("logoff"))
 			{
-				if(m_userOnline.contains(m_operationObj.m_user))
-					m_userOnline.remove(m_operationObj.m_user);
-				try {
-					m_socket.close();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
+				DealLogoff();
 				break;
-				
 			}
 		}
 	}
