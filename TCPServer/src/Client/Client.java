@@ -5,7 +5,6 @@ public class Client {
 		// TODO Auto-generated method stub
 		ClientSocket clientSocket = new ClientSocket();
 		LoginWindow clientWindow = new LoginWindow(clientSocket); 
-		ContactWindow contact = new ContactWindow("hyhyx", clientSocket);
 	}
 
 }

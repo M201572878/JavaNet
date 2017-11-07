@@ -38,7 +38,7 @@ public class ClientSocket {
 		}
 		
 		//接收服务器消息的线程
-		ReceiveServerThread receiveServerThread = new ReceiveServerThread();
+		ReceiveServerThread receiveServerThread = new ReceiveServerThread(this);
 		receiveServerThread.start();
 		
 		//监听其他客户端连接的线程
@@ -101,6 +101,10 @@ public class ClientSocket {
 	
 	//接收服务器消息的线程
 	private class ReceiveServerThread extends Thread{
+		ClientSocket m_parent = null;
+		ReceiveServerThread(ClientSocket clientSocket){
+			m_parent = clientSocket;
+		}
 		@Override
 		public void run(){
 			while(true)
@@ -114,8 +118,21 @@ public class ClientSocket {
 				}
 				if(m_operationObj.m_operationName.equals("registerSuccess"))
 				{
-					JOptionPane.showMessageDialog(null,"hello.",  "年龄请输入数字", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null,"tips",  "注册成功", JOptionPane.ERROR_MESSAGE);
 					m_loginWindow.Repain("login");
+				}
+				else if(m_operationObj.m_operationName.equals("findpasswordSuccess"))
+				{
+					JOptionPane.showMessageDialog(null,"tips",  "找回密码成功", JOptionPane.ERROR_MESSAGE);
+					m_loginWindow.Repain("login");
+				}
+				else if(m_operationObj.m_operationName.equals("loginSuccess"))
+				{
+					m_loginWindow.dispose();
+					m_contaContactWindow = new ContactWindow("hyhyx", m_parent);
+				}
+				else if(m_operationObj.m_operationName.equals("offlineMsgRsp"))
+				{
 				}
 			}
 			
