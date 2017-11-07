@@ -19,28 +19,32 @@ public class ClientSocket {
 	public ObjectInputStream m_objInputStream = null;
 	public Operation m_operationObj = null;
 	public HashMap m_otherClientSocketMap = new HashMap<String, OtherClientSocketInfo>();
-	public ClientSocket() {
+	public LoginWindow m_loginWindow = null;
+	public ContactWindow m_contaContactWindow = null;
+	public boolean Init() {
 		try {
 			m_SocketToServer = new Socket("localhost", 8088);
 			m_objOutputStream = new ObjectOutputStream(m_SocketToServer.getOutputStream());
 			m_objInputStream = new ObjectInputStream(m_SocketToServer.getInputStream());
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
+			return false;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		}finally {
 //			JOptionPane.showMessageDialog(null, "hello.");
 //			System.exit(0);
 		}
 		
 		//接收服务器消息的线程
-		ReceiveServerThread receiveServerThread = new ReceiveServerThread();
+		ReceiveServerThread receiveServerThread = new ReceiveServerThread(this);
 		receiveServerThread.start();
 		
 		//监听其他客户端连接的线程
 		ListenOtherClientThread listenOtherClientThread = new ListenOtherClientThread();
 		listenOtherClientThread.start();
-		
+		return true;
 	}
 	
 	public void SendToServer(Operation operation)
@@ -97,6 +101,10 @@ public class ClientSocket {
 	
 	//接收服务器消息的线程
 	private class ReceiveServerThread extends Thread{
+		ClientSocket m_parent = null;
+		ReceiveServerThread(ClientSocket clientSocket){
+			m_parent = clientSocket;
+		}
 		@Override
 		public void run(){
 			while(true)
@@ -107,6 +115,24 @@ public class ClientSocket {
 					e.printStackTrace();
 				} catch (IOException e) {
 					e.printStackTrace();
+				}
+				if(m_operationObj.m_operationName.equals("registerSuccess"))
+				{
+					JOptionPane.showMessageDialog(null,"tips",  "注册成功", JOptionPane.ERROR_MESSAGE);
+					m_loginWindow.Repain("login");
+				}
+				else if(m_operationObj.m_operationName.equals("findpasswordSuccess"))
+				{
+					JOptionPane.showMessageDialog(null,"tips",  "找回密码成功", JOptionPane.ERROR_MESSAGE);
+					m_loginWindow.Repain("login");
+				}
+				else if(m_operationObj.m_operationName.equals("loginSuccess"))
+				{
+					m_loginWindow.dispose();
+					m_contaContactWindow = new ContactWindow("hyhyx", m_parent);
+				}
+				else if(m_operationObj.m_operationName.equals("offlineMsgRsp"))
+				{
 				}
 			}
 			

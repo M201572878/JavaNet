@@ -40,11 +40,15 @@ public class ContactWindow extends JFrame {
 	int m_contactWidth = 250;
 	int m_contactHeight = 600;
 	String m_user = null;
+	public ClientSocket m_clientSocket = new ClientSocket();
 	public HashMap<String, ArrayList<ChatHistory>> m_userChatHistory = new HashMap<String, ArrayList<ChatHistory>>();
 	
-	ContactWindow(String user)
+	ContactWindow(String user, ClientSocket clientSocket)
 	{
 		m_user = user;
+		
+		m_clientSocket = clientSocket;
+		m_clientSocket.m_contaContactWindow = this;
 		
 		Font font=new Font("ËÎÌו", Font.PLAIN, 20);
 		m_userLabel.setFont(font);
