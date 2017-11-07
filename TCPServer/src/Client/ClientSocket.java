@@ -24,12 +24,15 @@ public class ClientSocket {
 	public boolean Init() {
 		try {
 			m_SocketToServer = new Socket("localhost", 8088);
+			m_serverSocket = new ServerSocket(0);
 			m_objOutputStream = new ObjectOutputStream(m_SocketToServer.getOutputStream());
 			m_objInputStream = new ObjectInputStream(m_SocketToServer.getInputStream());
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
+			JOptionPane.showMessageDialog(null, "连接失败", "tips", JOptionPane.ERROR_MESSAGE);
 			return false;
 		} catch (IOException e) {
+			JOptionPane.showMessageDialog(null, "连接失败", "tips", JOptionPane.ERROR_MESSAGE);
 			e.printStackTrace();
 			return false;
 		}finally {
@@ -118,21 +121,42 @@ public class ClientSocket {
 				}
 				if(m_operationObj.m_operationName.equals("registerSuccess"))
 				{
-					JOptionPane.showMessageDialog(null,"tips",  "注册成功", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, "注册成功", "tips", JOptionPane.INFORMATION_MESSAGE);
 					m_loginWindow.Repain("login");
 				}
 				else if(m_operationObj.m_operationName.equals("findpasswordSuccess"))
 				{
-					JOptionPane.showMessageDialog(null,"tips",  "找回密码成功", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(null, "找回密码成功", "tips", JOptionPane.INFORMATION_MESSAGE);
 					m_loginWindow.Repain("login");
 				}
 				else if(m_operationObj.m_operationName.equals("loginSuccess"))
 				{
-					m_loginWindow.dispose();
-					m_contaContactWindow = new ContactWindow("hyhyx", m_parent);
+					m_contaContactWindow = new ContactWindow(m_operationObj.m_user, m_parent);
+					m_loginWindow.close();
+				}
+				else if(m_operationObj.m_operationName.equals("userListRsp"))
+				{
+					String[] users = m_operationObj.m_users.split("\n");
+					String[] userStates = m_operationObj.m_userStates.split("\n");
+					m_contaContactWindow.AddUsers(users, userStates);
 				}
 				else if(m_operationObj.m_operationName.equals("offlineMsgRsp"))
 				{
+					m_contaContactWindow.AddMsg(m_operationObj.m_user, m_operationObj.m_msg);
+				}
+				else if(m_operationObj.m_operationName.equals("onlineMsgRsp"))
+				{
+					ConnectToOtherClient(m_operationObj.m_targetUser, m_operationObj.m_ip, m_operationObj.m_port);
+				}
+				else if(m_operationObj.m_operationName.equals("userLoginNotify"))
+				{
+					String user = m_operationObj.m_user;
+					m_contaContactWindow.ChangeContactState(user, "online");
+				}
+				else if(m_operationObj.m_operationName.equals("userLogoutNotify"))
+				{
+					String user = m_operationObj.m_user;
+					m_contaContactWindow.ChangeContactState(user, "offline");
 				}
 			}
 			

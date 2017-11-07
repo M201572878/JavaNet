@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Array;
 import java.net.Socket;
+import java.nio.channels.SelectionKey;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,12 +18,24 @@ public class ServerThread extends Thread
 	public Socket m_socket = null;
 	public BufferedWriter m_bufferWriter = null;
 	public Operation m_operationObj = null;
+	public String m_user = null;
 	public ObjectInputStream m_objInputStream = null;
 	public ObjectOutputStream m_objOutputStream = null;
 	public boolean m_continue = true;
 	public static HashMap<String, UserInfo> m_userInfoMap = new HashMap<String, UserInfo>();
 	public static HashMap m_userOnlineMap = new HashMap<String, OnlineUserInfo>();
-	public HashMap m_offlineMsgMap = new HashMap<String, List<String>>();
+	public static HashMap<String, ArrayList<OfflineMsg>> m_offlineMsgMap = new HashMap<String, ArrayList<OfflineMsg>>();
+	public static ArrayList<ObjectOutputStream> m_objOutputList = new ArrayList<ObjectOutputStream>();
+	
+	private class OfflineMsg{
+		String m_msg = null;
+		String m_sender = null;
+		OfflineMsg(String sender, String msg)
+		{
+			m_sender = sender;
+			m_msg = msg;
+		}
+	}
 	
 	private class OnlineUserInfo{
 		public String m_ip = null;
@@ -42,6 +55,19 @@ public class ServerThread extends Thread
 	public ServerThread(Socket socket)
 	{
 		m_socket = socket;
+	}
+	
+	public void SendBroadcast(Operation operation)
+	{
+		for(ObjectOutputStream objectOutputStream: m_objOutputList)
+		{
+			try {
+				objectOutputStream.writeObject(operation);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public void DealRegister()
@@ -76,6 +102,10 @@ public class ServerThread extends Thread
 		}
 	}
 	
+	public void DealConfirmOfflineMsg()
+	{
+		m_offlineMsgMap.remove(m_user);
+	}
 	
 	public void DealLogin()
 	{
@@ -84,10 +114,13 @@ public class ServerThread extends Thread
 		if(m_userInfoMap.containsKey(m_operationObj.m_user) &&
 				correctUserInfo.m_password.equals(m_operationObj.m_password))
 		{
+			m_user = m_operationObj.m_user;
 			m_userOnlineMap.put(m_operationObj.m_user, new OnlineUserInfo(m_operationObj.m_ip, m_operationObj.m_port,
 					m_operationObj.m_udpIp, m_operationObj.m_udpPort));
+			
 			Operation operation = new Operation();
 			operation.m_operationName = "loginSuccess";
+			operation.m_user = m_user;
 			try {
 				m_objOutputStream.writeObject(operation);
 				//用户列表
@@ -112,15 +145,21 @@ public class ServerThread extends Thread
 				//离线消息
 				Operation operation3 = new Operation();
 				operation3.m_operationName = "offlineMsgRsp";
-				operation3.m_msg = "";
 				if(m_offlineMsgMap.containsKey(m_operationObj.m_user))
 				{
-					for(String msg: (ArrayList<String>)m_offlineMsgMap.get(m_operationObj.m_user))
+					for(OfflineMsg msg: (ArrayList<OfflineMsg>)m_offlineMsgMap.get(m_operationObj.m_user))
 					{
-						operation3.m_msg += msg;
-						operation3.m_msg += "\n";
+						operation3.m_msg = msg.m_msg;
+						operation3.m_user = msg.m_sender;
+						m_objOutputStream.writeObject(operation3);
 					}
 				}
+				
+				//广播用户上线
+				Operation broadcastOperation = new Operation();
+				broadcastOperation.m_operationName = "userLoginNotify";
+				broadcastOperation.m_user = m_user;
+				SendBroadcast(broadcastOperation);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -152,13 +191,14 @@ public class ServerThread extends Thread
 		}
 	}
 	
-	public void DealGetOtherClientAddr()
+	public void DealOnlineMsg()
 	{
 		Operation operation = new Operation();
 		operation.m_operationName = "getOtherClientAddrRsp";
-		OnlineUserInfo onlineUserInfo = (OnlineUserInfo) m_userOnlineMap.get(m_operationObj.m_dstUser);
+		OnlineUserInfo onlineUserInfo = (OnlineUserInfo) m_userOnlineMap.get(m_operationObj.m_targetUser);
 		operation.m_ip = onlineUserInfo.m_ip;
 		operation.m_port = onlineUserInfo.m_port;
+		operation.m_targetUser = m_operationObj.m_targetUser;
 		try {
 			m_objOutputStream.writeObject(operation);
 		} catch (IOException e) {
@@ -167,14 +207,14 @@ public class ServerThread extends Thread
 		}
 	}
 	
-	public void DealSendOfflineMsg()
+	public void DealOfflineMsg()
 	{
-		if(!m_offlineMsgMap.containsKey(m_operationObj.m_dstUser))
+		if(!m_offlineMsgMap.containsKey(m_operationObj.m_targetUser))
 		{
-			m_offlineMsgMap.put(m_operationObj.m_dstUser, new ArrayList<String>());
+			m_offlineMsgMap.put(m_operationObj.m_targetUser, new ArrayList<OfflineMsg>());
 		}
-		ArrayList<String> list = (ArrayList<String>) m_offlineMsgMap.get(m_operationObj.m_dstUser);
-		list.add(m_operationObj.m_msg);
+		ArrayList<OfflineMsg> list = (ArrayList<OfflineMsg>) m_offlineMsgMap.get(m_operationObj.m_targetUser);
+		list.add(new OfflineMsg(m_operationObj.m_user, m_operationObj.m_msg));
 	}
 	
 	public void DealFindPassWord()
@@ -230,6 +270,7 @@ public class ServerThread extends Thread
 		try {
 			m_objInputStream = new ObjectInputStream(m_socket.getInputStream());
 			m_objOutputStream = new ObjectOutputStream(m_socket.getOutputStream());
+			m_objOutputList.add(m_objOutputStream);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -247,12 +288,26 @@ public class ServerThread extends Thread
 				m_operationObj = (Operation) m_objInputStream.readObject();
 			} catch (ClassNotFoundException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-				continue;
+//				e.printStackTrace();
+				m_userOnlineMap.remove(m_user);
+				m_objOutputList.remove(m_objOutputStream);
+				
+				Operation broadcastOperation = new Operation();
+				broadcastOperation.m_operationName = "userLogoutNotify";
+				broadcastOperation.m_user = m_user;
+				SendBroadcast(broadcastOperation);
+				break;
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
-				e.printStackTrace();
-				continue;
+//				e.printStackTrace();
+				m_userOnlineMap.remove(m_user);
+				m_objOutputList.remove(m_objOutputStream);
+				
+				Operation broadcastOperation = new Operation();
+				broadcastOperation.m_operationName = "userLogoutNotify";
+				broadcastOperation.m_user = m_user;
+				SendBroadcast(broadcastOperation);
+				break;
 			}
 			System.out.println(m_operationObj.m_operationName);
 			if(m_operationObj.m_operationName.equals("register"))
@@ -269,16 +324,20 @@ public class ServerThread extends Thread
 			}
 			else if(m_operationObj.m_operationName.equals("getOtherClientAddr"))
 			{
-				DealGetOtherClientAddr();
+				DealOnlineMsg();
 			}
-			else if(m_operationObj.m_operationName.equals("sendOfflineMsg"))
+			else if(m_operationObj.m_operationName.equals("offlineMsgReq"))
 			{
-				DealSendOfflineMsg();
+				DealOfflineMsg();
 			}
 			else if(m_operationObj.m_operationName.equals("logoff"))
 			{
 				DealLogoff();
 				break;
+			}
+			else if(m_operationObj.m_operationName.equals("confirmOfflineMsg"))
+			{
+				DealConfirmOfflineMsg();
 			}
 		}
 	}

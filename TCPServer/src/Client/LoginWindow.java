@@ -45,6 +45,11 @@ public class LoginWindow extends JFrame {
         m_frame.setVisible(true);
 	}
 	
+	public void close()
+	{
+		m_frame.setVisible(false);
+	}
+	
 	public void Repain(String action)
 	{
 		System.out.println(action);
@@ -93,6 +98,8 @@ public class LoginWindow extends JFrame {
 	            	operation.m_operationName = "login";
 	            	operation.m_user = userName;
 	            	operation.m_password = password;
+	            	operation.m_ip = m_clientSocket.m_serverSocket.getInetAddress().getHostAddress();
+	            	operation.m_port = m_clientSocket.m_serverSocket.getLocalPort();
 	            	m_clientSocket.SendToServer(operation);
 	            }
 			}
@@ -163,6 +170,7 @@ public class LoginWindow extends JFrame {
         	{
         		m_promptLabel.setText("信息不完整");
             	m_promptLabel.setVisible(true);
+            	return;
         	}
         	
             if(firstPassword.equals(secondPassword) && firstAnswer.equals(secondAnswer))  

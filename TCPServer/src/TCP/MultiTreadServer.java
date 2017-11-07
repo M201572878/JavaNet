@@ -29,6 +29,10 @@ public class MultiTreadServer {
 			e.printStackTrace();
 		}
 		Socket socket = null;
+		ServerThread.m_userInfoMap.put("1", new UserInfo("1", "1", "1"));
+		ServerThread.m_userInfoMap.put("2", new UserInfo("2", "2", "2"));
+		ServerThread.m_userInfoMap.put("3", new UserInfo("3", "3", "3"));
+		ServerThread.m_userInfoMap.put("4", new UserInfo("4", "4", "4"));
 		while(true)
 		{
 			try {
