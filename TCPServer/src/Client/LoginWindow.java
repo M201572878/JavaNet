@@ -29,9 +29,12 @@ public class LoginWindow extends JFrame {
 	public JFrame m_frame = new JFrame("Login Example");
 	public JPanel m_mainPanel = new JPanel();   
 	public CardLayout m_mainPanelLayout = new CardLayout();
+	public ClientSocket m_clientSocket = new ClientSocket();
 	
-	LoginWindow()
+	LoginWindow(ClientSocket clientSocket)
 	{
+		m_clientSocket = clientSocket;
+		m_clientSocket.m_loginWindow = this;
 		m_frame.setSize(350, 200);
 		m_frame.setResizable(false);
 		m_frame.setLocation(500, 500);
@@ -40,10 +43,9 @@ public class LoginWindow extends JFrame {
         m_mainPanel.setLayout(m_mainPanelLayout);
         m_mainPanel.add(new LoginPanel());
         m_frame.setVisible(true);
-        
 	}
 	
-	private void Repain(String action)
+	public void Repain(String action)
 	{
 		System.out.println(action);
 		if(action.equals("register"))
@@ -70,57 +72,6 @@ public class LoginWindow extends JFrame {
 		}
 	}
 	
-	private class ChatPanel extends JPanel implements ActionListener{
-
-		@Override
-		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			
-		} 
-		
-		ChatPanel() {
-			setLayout(null);
-			String[] words= { "quick", "brown", "hungry","quick", "brown", "hungry", "wild","quick", "brown", "hungry", "wild","quick", "brown", "hungry", "wild"};
-			JList<String> wordList = new JList<>(words);
-			wordList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-//			wordList.setPreferredSize(new Dimension(40,180));
-//			wordList.setVisibleRowCount(8);
-//			wordList.setBounds(250, 0, 100, 200);
-			wordList.addListSelectionListener(new ListSelectionListener() {
-				
-				@Override
-				public void valueChanged(ListSelectionEvent e) {
-					System.out.println(wordList.getSelectedValue());
-					
-				}
-			});
-			wordList.addMouseListener(new MouseAdapter() {
-				public void mouseClicked(MouseEvent mouseEvent) {
-	                JList theList = (JList) mouseEvent.getSource();
-	                if (mouseEvent.getClickCount() == 2) {
-	                    int index = theList.locationToIndex(mouseEvent.getPoint());
-	                    if (index >= 0) {
-//	                        Object o = theList.getModel().getElementAt(index);
-//	                        field.setText(o.toString());
-	                    	wordList.setSelectionBackground(new Color(0xFF0000));
-	                    }
-	                }
-	            }
-			});
-			JScrollPane scrollPane = new JScrollPane(wordList);
-//			scrollPane.setSize(100,200);
-			scrollPane.setBounds(200, 0, 150, 200);
-			JTextArea jTextArea = new JTextArea(10, 15);
-			jTextArea.setBounds(0, 0, 200, 200);
-			JTextArea inputArea = new JTextArea(10, 15);
-			inputArea.setBounds(0, 205, 350, 90);
-			add(scrollPane);
-			add(jTextArea);
-			add(inputArea);
-		}
-		
-	}
-	
 	private class LoginPanel extends JPanel implements ActionListener{ 
 		JLabel m_userLabel = new JLabel("User:");
 		JTextField m_userInput = new JTextField(20);
@@ -142,6 +93,7 @@ public class LoginWindow extends JFrame {
 	            	operation.m_operationName = "login";
 	            	operation.m_user = userName;
 	            	operation.m_password = password;
+	            	m_clientSocket.SendToServer(operation);
 	            }
 			}
 			else if(source == m_registerButton)
@@ -219,6 +171,7 @@ public class LoginWindow extends JFrame {
             	operation.m_operationName = m_operation;
             	operation.m_user = userName;
             	operation.m_userInfo = new UserInfo(userName, firstPassword, firstAnswer);
+            	m_clientSocket.SendToServer(operation);
             }
             else
             {

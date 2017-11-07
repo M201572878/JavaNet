@@ -3,8 +3,9 @@ package Client;
 public class Client {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		ContactWindow contact = new ContactWindow("hyhyx");
-		LoginWindow clientWindow = new LoginWindow(); 
+		ClientSocket clientSocket = new ClientSocket();
+		LoginWindow clientWindow = new LoginWindow(clientSocket); 
+		ContactWindow contact = new ContactWindow("hyhyx", clientSocket);
 	}
 
 }

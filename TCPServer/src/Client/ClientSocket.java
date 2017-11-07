@@ -19,15 +19,19 @@ public class ClientSocket {
 	public ObjectInputStream m_objInputStream = null;
 	public Operation m_operationObj = null;
 	public HashMap m_otherClientSocketMap = new HashMap<String, OtherClientSocketInfo>();
-	public ClientSocket() {
+	public LoginWindow m_loginWindow = null;
+	public ContactWindow m_contaContactWindow = null;
+	public boolean Init() {
 		try {
 			m_SocketToServer = new Socket("localhost", 8088);
 			m_objOutputStream = new ObjectOutputStream(m_SocketToServer.getOutputStream());
 			m_objInputStream = new ObjectInputStream(m_SocketToServer.getInputStream());
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
+			return false;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		}finally {
 //			JOptionPane.showMessageDialog(null, "hello.");
 //			System.exit(0);
@@ -40,7 +44,7 @@ public class ClientSocket {
 		//监听其他客户端连接的线程
 		ListenOtherClientThread listenOtherClientThread = new ListenOtherClientThread();
 		listenOtherClientThread.start();
-		
+		return true;
 	}
 	
 	public void SendToServer(Operation operation)
@@ -107,6 +111,11 @@ public class ClientSocket {
 					e.printStackTrace();
 				} catch (IOException e) {
 					e.printStackTrace();
+				}
+				if(m_operationObj.m_operationName.equals("registerSuccess"))
+				{
+					JOptionPane.showMessageDialog(null,"hello.",  "年龄请输入数字", JOptionPane.ERROR_MESSAGE);
+					m_loginWindow.Repain("login");
 				}
 			}
 			
