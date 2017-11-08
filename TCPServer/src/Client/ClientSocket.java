@@ -204,6 +204,11 @@ public class ClientSocket {
 			{
 				try {
 					Operation operation = (Operation) m_otherClientObjInputStream.readObject();
+					System.out.println("from other client:"+operation.m_operationName + operation.m_msg);
+					if(operation.m_operationName.equals("onlineChatWithOtherClient"))
+					{
+						m_contaContactWindow.AddMsg(operation.m_user, operation.m_msg);
+					}
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {

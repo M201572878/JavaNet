@@ -115,8 +115,9 @@ public class ServerThread extends Thread
 				correctUserInfo.m_password.equals(m_operationObj.m_password))
 		{
 			m_user = m_operationObj.m_user;
-			m_userOnlineMap.put(m_operationObj.m_user, new OnlineUserInfo(m_operationObj.m_ip, m_operationObj.m_port,
-					m_operationObj.m_udpIp, m_operationObj.m_udpPort));
+			String ipString = m_socket.getInetAddress().getHostAddress();
+			m_userOnlineMap.put(m_operationObj.m_user, new OnlineUserInfo(ipString, m_operationObj.m_port,
+					ipString, m_operationObj.m_udpPort));
 			
 			Operation operation = new Operation();
 			operation.m_operationName = "loginSuccess";
@@ -194,7 +195,7 @@ public class ServerThread extends Thread
 	public void DealOnlineMsg()
 	{
 		Operation operation = new Operation();
-		operation.m_operationName = "getOtherClientAddrRsp";
+		operation.m_operationName = "onlineMsgRsp";
 		OnlineUserInfo onlineUserInfo = (OnlineUserInfo) m_userOnlineMap.get(m_operationObj.m_targetUser);
 		operation.m_ip = onlineUserInfo.m_ip;
 		operation.m_port = onlineUserInfo.m_port;
@@ -322,7 +323,7 @@ public class ServerThread extends Thread
 			{
 				DealFindPassWord();
 			}
-			else if(m_operationObj.m_operationName.equals("getOtherClientAddr"))
+			else if(m_operationObj.m_operationName.equals("onlineMsgReq"))
 			{
 				DealOnlineMsg();
 			}

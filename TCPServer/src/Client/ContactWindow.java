@@ -99,14 +99,21 @@ public class ContactWindow extends JFrame {
                     if (index >= 0) {
                     	if(m_msgMap.containsKey(m_selectUser)){
                     		m_msgMap.remove(m_selectUser);
-                    		Operation operation = new Operation();
-                    		operation.m_operationName = "confirmOfflineMsg";
-                    		m_clientSocket.SendToServer(operation);
+                    		if(m_contactStateMap.get(m_selectUser).equals("offline"))
+                    		{
+                    			Operation operation = new Operation();
+                        		operation.m_operationName = "confirmOfflineMsg";
+                        		m_clientSocket.SendToServer(operation);
+                    		}
                     	}
                     	if(!m_openContactWindowMap.containsKey(m_selectUser))
                     	{
                     		ChatWindow chatWindow = new ChatWindow(m_selectUser);
                     		m_openContactWindowMap.put(m_selectUser, chatWindow);
+                			Operation operation = new Operation();
+                			operation.m_targetUser = m_selectUser;
+                			operation.m_operationName = "onlineMsgReq";
+                			m_clientSocket.SendToServer(operation);
                     	}
                     	else
                     	{
@@ -213,19 +220,24 @@ public class ContactWindow extends JFrame {
 			String inputContent = m_inputArea.getText();
 			m_chatArea.append(GetChatRowKeepRight(inputContent) + "\n");
 			m_inputArea.setText("");
-			Operation operation = new Operation();
-			operation.m_targetUser = m_chatTargeUser;
+			
 			if(m_contactStateMap.get(m_chatTargeUser).equals("online"))
 			{
-				operation.m_operationName = "onlineMsgReq";
+				Operation operation = new Operation();
+				operation.m_operationName = "onlineChatWithOtherClient";
+				operation.m_msg = inputContent;
+				m_clientSocket.SendMessageToOtherClient(m_chatTargeUser, operation);
 			}
 			else
 			{
+				Operation operation = new Operation();
+				operation.m_targetUser = m_chatTargeUser;
 				operation.m_user = m_user;
 				operation.m_operationName = "offlineMsgReq";
 				operation.m_msg = inputContent;
+				m_clientSocket.SendToServer(operation);
 			}
-			m_clientSocket.SendToServer(operation);
+			
 		}
 		
 		public void Show()
