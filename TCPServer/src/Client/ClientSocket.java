@@ -152,6 +152,7 @@ public class ClientSocket {
 				{
 					String user = m_operationObj.m_user;
 					m_contaContactWindow.ChangeContactState(user, "online");
+					m_contaContactWindow.repaint();
 				}
 				else if(m_operationObj.m_operationName.equals("userLogoutNotify"))
 				{

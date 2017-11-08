@@ -97,7 +97,8 @@ public class ContactWindow extends JFrame {
                 if (mouseEvent.getClickCount() == 2) {
                     int index = theList.locationToIndex(mouseEvent.getPoint());
                     if (index >= 0) {
-                    	if(m_msgMap.containsKey(m_selectUser)){
+                    	if(m_msgMap.containsKey(m_selectUser))
+                    	{
                     		m_msgMap.remove(m_selectUser);
                     		if(m_contactStateMap.get(m_selectUser).equals("offline"))
                     		{
@@ -117,6 +118,7 @@ public class ContactWindow extends JFrame {
                     	}
                     	else
                     	{
+                    		m_openContactWindowMap.get(m_selectUser).setVisible(true);
                     		m_openContactWindowMap.get(m_selectUser).Show();
                     	}
                     }
@@ -146,12 +148,21 @@ public class ContactWindow extends JFrame {
 		if(!m_msgMap.containsKey(sender)){
 			m_msgMap.put(sender, new ArrayList<String>());
 		}
+		System.out.println(sender+msg);
 //		m_msgMap.get(sender).add(msg);
 		if(!m_userChatHistory.containsKey(sender))
 		{
 			m_userChatHistory.put(sender, new ArrayList<ChatHistory>());
 		}
 		m_userChatHistory.get(sender).add(new ChatHistory(sender, msg));
+		repaint();
+		RefreshContactWindow(sender);
+	}
+	
+	public void RefreshContactWindow(String target)
+	{
+		if(m_openContactWindowMap.containsKey(target))
+			m_openContactWindowMap.get(target).RefreshText();
 	}
 	
 	public void ChangeContactState(String user, String state)
@@ -218,13 +229,14 @@ public class ContactWindow extends JFrame {
 		} 
 		private void OnSend(){
 			String inputContent = m_inputArea.getText();
-			m_chatArea.append(GetChatRowKeepRight(inputContent) + "\n");
+			m_chatArea.append(GetChatRowKeepRight(inputContent));
 			m_inputArea.setText("");
 			
 			if(m_contactStateMap.get(m_chatTargeUser).equals("online"))
 			{
 				Operation operation = new Operation();
 				operation.m_operationName = "onlineChatWithOtherClient";
+				operation.m_user = m_user;
 				operation.m_msg = inputContent;
 				m_clientSocket.SendMessageToOtherClient(m_chatTargeUser, operation);
 			}
@@ -237,7 +249,22 @@ public class ContactWindow extends JFrame {
 				operation.m_msg = inputContent;
 				m_clientSocket.SendToServer(operation);
 			}
+			m_userChatHistory.get(m_chatTargeUser).add(new ChatHistory(m_user, inputContent));
 			
+		}
+		
+		public void RefreshText()
+		{
+			m_chatArea.setText("");
+			for(ChatHistory chatHistory : m_userChatHistory.get(m_chatTargeUser)){
+				String messageDisplay = chatHistory.m_message;
+				if(m_user.equals(chatHistory.m_sender))
+				{
+					messageDisplay = GetChatRowKeepRight(messageDisplay);
+				}
+				m_chatArea.append(messageDisplay + "\n");
+			}
+			repaint();
 		}
 		
 		public void Show()
