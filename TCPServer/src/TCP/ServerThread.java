@@ -9,9 +9,14 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Array;
 import java.net.Socket;
 import java.nio.channels.SelectionKey;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+
+import javax.swing.SwingUtilities;
 
 public class ServerThread extends Thread
 {
@@ -57,6 +62,7 @@ public class ServerThread extends Thread
 		m_socket = socket;
 	}
 	
+
 	public void SendBroadcast(Operation operation)
 	{
 		for(ObjectOutputStream objectOutputStream: m_objOutputList)
@@ -70,6 +76,7 @@ public class ServerThread extends Thread
 		}
 	}
 	
+
 	public void DealRegister()
 	{
 		System.out.println("register»Ø¸´");
@@ -118,7 +125,20 @@ public class ServerThread extends Thread
 			String ipString = m_socket.getInetAddress().getHostAddress();
 			m_userOnlineMap.put(m_operationObj.m_user, new OnlineUserInfo(ipString, m_operationObj.m_port,
 					ipString, m_operationObj.m_udpPort));
-			
+			SwingUtilities.invokeLater(new Runnable() {
+	            @Override
+	            public void run() {
+	            		String time = new String();
+	            		Calendar now = Calendar.getInstance();
+	            		String temp = new String();
+	            		time = now.get(Calendar.YEAR)+"/"+now.get(Calendar.MONTH)+"/"+now.get(Calendar.DATE)+" ";
+	            		temp = now.get(Calendar.HOUR_OF_DAY)+":"+now.get(Calendar.MINUTE)+":"+now.get(Calendar.SECOND);
+	            		time = time.concat(temp);		
+	            	System.out.println(time);
+	            	ServerWindow.m_onlineListTextArea.append(time);
+					ServerWindow.m_onlineListTextArea.append("\nuser:  "+ m_operationObj.m_user + "  logged  in.\n");
+	            }
+	        });
 			Operation operation = new Operation();
 			operation.m_operationName = "loginSuccess";
 			operation.m_user = m_user;
@@ -182,14 +202,31 @@ public class ServerThread extends Thread
 	
 	public void DealLogoff()
 	{
-		if(m_userOnlineMap.containsKey(m_operationObj.m_user))
+		if(m_userOnlineMap.containsKey(m_operationObj.m_user)){
 			m_userOnlineMap.remove(m_operationObj.m_user);
+			SwingUtilities.invokeLater(new Runnable() {
+	            @Override
+	            public void run() {
+	            		String time = new String();
+	            		Calendar now = Calendar.getInstance();
+	            		String temp = new String();
+	            		time = now.get(Calendar.YEAR)+"/"+now.get(Calendar.MONTH)+"/"+now.get(Calendar.DATE)+" ";
+	            		temp = now.get(Calendar.HOUR_OF_DAY)+":"+now.get(Calendar.MINUTE)+":"+now.get(Calendar.SECOND);
+	            		time = time.concat(temp);		
+	            	System.out.println(time);
+	            	ServerWindow.m_onlineListTextArea.append(time);
+					ServerWindow.m_onlineListTextArea.append("\nuser:  "+ m_operationObj.m_user + "  logged  out.\n");
+	            }
+	        });
+		}
+			
 		try {
 			m_socket.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		
 	}
 	
 	public void DealOnlineMsg()
@@ -311,6 +348,7 @@ public class ServerThread extends Thread
 				break;
 			}
 			System.out.println(m_operationObj.m_operationName);
+			MultiTreadServer.ShowAllUser();
 			if(m_operationObj.m_operationName.equals("register"))
 			{
 				DealRegister();
