@@ -1,8 +1,11 @@
 package Client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -15,16 +18,20 @@ import TCP.Operation;
 public class ClientSocket {
 	public Socket m_SocketToServer = null;
 	public ServerSocket m_serverSocket = null;
+	public DatagramSocket m_fileServer = null;
 	public ObjectOutputStream m_objOutputStream = null;
 	public ObjectInputStream m_objInputStream = null;
 	public Operation m_operationObj = null;
 	public HashMap m_otherClientSocketMap = new HashMap<String, OtherClientSocketInfo>();
 	public LoginWindow m_loginWindow = null;
 	public ContactWindow m_contaContactWindow = null;
+	public File m_sendFile = null;
+	public String m_receiveFileName = null;
 	public boolean Init() {
 		try {
 			m_SocketToServer = new Socket("localhost", 8088);
 			m_serverSocket = new ServerSocket(0);
+			m_fileServer = new DatagramSocket(0);
 			m_objOutputStream = new ObjectOutputStream(m_SocketToServer.getOutputStream());
 			m_objInputStream = new ObjectInputStream(m_SocketToServer.getInputStream());
 		} catch (UnknownHostException e) {
@@ -165,6 +172,26 @@ public class ClientSocket {
 		}
 	}
 	
+	
+	private class FileServerThread extends Thread{
+		@Override
+		public void run(){
+			while(true)
+			{
+				byte[] buf=new byte[1024];
+		        DatagramPacket packet=new DatagramPacket(buf, buf.length);
+		        System.out.println("I am waiting.");
+		        try {
+					m_fileServer.receive(packet);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		        byte[] mess=packet.getData();
+			}
+		}
+	}
+	
 	//监听其他客户端连接的线程
 	private class ListenOtherClientThread extends Thread{
 		@Override
@@ -180,6 +207,13 @@ public class ClientSocket {
 					e.printStackTrace();
 				}
 			}
+		}
+	}
+	
+	private class SendFileThread extends Thread{
+		@Override
+		public void run(){
+			
 		}
 	}
 	
@@ -210,6 +244,47 @@ public class ClientSocket {
 					if(operation.m_operationName.equals("onlineChatWithOtherClient"))
 					{
 						m_contaContactWindow.AddMsg(operation.m_user, operation.m_msg);
+					}
+					else if(operation.m_operationName.equals("sendFileReq"))
+					{
+						m_contaContactWindow.AddMsg(operation.m_user, operation.m_msg);
+						if(m_contaContactWindow.m_fileTransState)
+						{
+							Operation operation2 = new Operation();
+							operation.m_operationName = "sendFileRsp";
+							operation.m_user = m_contaContactWindow.m_user;
+							operation.m_msg = "another file is transferring, please wait..";
+							SendMessageToOtherClient(operation.m_user, operation2);
+						}
+						else
+						{
+							Operation operation2 = new Operation();
+							operation.m_operationName = "sendFileRsp";
+							operation.m_user = m_contaContactWindow.m_user;
+							int ret = JOptionPane.showConfirmDialog(null, operation.m_user + "want to send file " + operation.m_fileName + ", are you sure to receive", "tips", JOptionPane.YES_NO_OPTION);
+				            if(ret == 0)
+				            {
+				            	m_contaContactWindow.m_fileTransState = true;
+				            	operation.m_msg = "agreeFileTrans";
+				            	m_receiveFileName = operation.m_fileName;
+				            }
+				            else
+				            {
+				            	operation.m_msg = m_contaContactWindow.m_user + " refused to accept the file";
+				            }
+							SendMessageToOtherClient(operation.m_user, operation2);
+						}
+					}
+					else if(operation.m_operationName.equals("sendFileRsp"))
+					{
+						if(operation.m_msg.equals("agreeFileTrans"))
+						{
+							
+						}
+						else
+						{
+							JOptionPane.showConfirmDialog(null, operation.m_msg, "tips", JOptionPane.INFORMATION_MESSAGE);
+						}
 					}
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();

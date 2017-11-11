@@ -16,4 +16,5 @@ public class Operation implements Serializable {
 	public int m_udpPort = 0;
 	public int m_port = 0;
 	public String m_targetUser = null;
+	public String m_fileName = null;
 }

@@ -53,7 +53,6 @@ public class MultiTreadServer {
 		ShowAllUser();
 		while(true)
 		{
-				
 			try {
 				socket = serverSocket.accept();
 			} catch (IOException e) {

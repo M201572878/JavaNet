@@ -1,5 +1,6 @@
 package Client;
 
+import java.awt.Button;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -8,12 +9,15 @@ import java.awt.Image;
 import java.awt.List;
 import java.awt.Toolkit;
 import java.awt.color.ColorSpace;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.dnd.DropTargetListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,9 +25,12 @@ import java.util.HashMap;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
@@ -31,6 +38,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.TransferHandler;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.xml.crypto.dsig.SignedInfo;
@@ -53,6 +61,7 @@ public class ContactWindow extends JFrame {
 	public HashMap<String, ArrayList<ChatHistory>> m_userChatHistory = new HashMap<String, ArrayList<ChatHistory>>();
 	public HashMap<String, ArrayList<String>> m_msgMap = new HashMap<String, ArrayList<String>>();
 	public HashMap<String, ChatWindow> m_openContactWindowMap = new HashMap<String, ChatWindow>();
+	boolean m_fileTransState = false;
 	
 	ContactWindow(String user, ClientSocket clientSocket)
 	{
@@ -218,7 +227,9 @@ public class ContactWindow extends JFrame {
 		JTextArea m_inputArea = new JTextArea(10, 15);
 		JButton m_closeButton = new JButton("close");
 		JButton m_sendButton = new JButton("send");
+		JButton m_uploadFileButton = new JButton("send file");
 		JPanel m_operationPanel = new JPanel();
+		JLabel m_fileUploadInfo = new JLabel();
 		String m_chatTargeUser = null;
 		
 
@@ -308,12 +319,35 @@ public class ContactWindow extends JFrame {
                  }   
              });   
 			
-			
 			m_operationPanel.setLayout(null);
 			m_operationPanel.setBackground(new Color(0xFFFFFF));
 			m_operationPanel.setBounds(0, 330, m_chatWidth, 60);
+			m_uploadFileButton.setBounds(0, 10, 100, 25);
+			m_fileUploadInfo.setBounds(100, 10, 300, 25);
+			m_fileUploadInfo.setVisible(false);
 			m_closeButton.setBounds(m_chatWidth - 230, 10, 100, 25);
 			m_sendButton.setBounds(m_chatWidth - 120, 10, 100, 25);
+			m_uploadFileButton.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					JFileChooser jfc=new JFileChooser();
+					jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+			        if(jfc.showOpenDialog(null)==JFileChooser.APPROVE_OPTION){
+			            File file=jfc.getSelectedFile();
+			            int ret = JOptionPane.showConfirmDialog(null, "sure to send file " + file.getName(), "tips", JOptionPane.YES_NO_OPTION);
+			            if(ret == 0)
+			            {
+			            	m_clientSocket.m_sendFile = file;
+			            	Operation operation = new Operation();
+			            	operation.m_operationName = "sendFileReq";
+			            	operation.m_user = m_user;
+			            	operation.m_fileName = file.getName();
+			            	m_clientSocket.SendMessageToOtherClient(m_chatTargeUser, operation);
+			            }
+			        }
+				}
+			});
 			m_closeButton.addActionListener(new ActionListener() {
 				
 				@Override
@@ -328,6 +362,8 @@ public class ContactWindow extends JFrame {
 					OnSend();
 				}
 			});
+			m_operationPanel.add(m_uploadFileButton);
+			m_operationPanel.add(m_fileUploadInfo);
 			m_operationPanel.add(m_closeButton);
 			m_operationPanel.add(m_sendButton);
 			
@@ -381,7 +417,6 @@ public class ContactWindow extends JFrame {
 	                length++;  
 	            else  
 	                length += 2;  
-
 	        }  
 	        return length;
 		}

@@ -144,7 +144,7 @@ public class LoginWindow extends JFrame {
 		JLabel m_secondPasswordLabel = new JLabel("Password:");
 		JPasswordField m_firstPasswordInput = new JPasswordField(20);
 		JPasswordField m_secondPasswordInput = new JPasswordField(20);
-		JLabel m_securityQuestionLabel = new JLabel("Security Question: ");
+		JLabel m_securityQuestionLabel = new JLabel("Security Question: ", JLabel.CENTER);
 		JLabel m_firstAnswerLabel = new JLabel("Answer: ");
 		JLabel m_secondAnswerLabel = new JLabel("Answer: ");
 		JPasswordField m_firstAnswerInput = new JPasswordField(20);
