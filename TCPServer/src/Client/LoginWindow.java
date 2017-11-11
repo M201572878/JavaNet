@@ -3,6 +3,7 @@ package Client;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -35,9 +36,9 @@ public class LoginWindow extends JFrame {
 	{
 		m_clientSocket = clientSocket;
 		m_clientSocket.m_loginWindow = this;
-		m_frame.setSize(350, 200);
+		m_frame.setSize(350*2, 200*2);
 		m_frame.setResizable(false);
-		m_frame.setLocation(500, 500);
+		m_frame.setLocation(500, 300);
         m_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         m_frame.add(m_mainPanel);
         m_mainPanel.setLayout(m_mainPanelLayout);
@@ -55,21 +56,21 @@ public class LoginWindow extends JFrame {
 		System.out.println(action);
 		if(action.equals("register"))
 		{
-			m_frame.resize(350, 300);
+			m_frame.resize(350*2, 300*2);
 			m_mainPanel.removeAll();
 			m_mainPanel.add(new RegisterPanel("register"));
 			m_mainPanel.validate();
 		}
 		else if(action.equals("findpassword"))
 		{
-			m_frame.resize(350, 300);
+			m_frame.resize(350*2, 300*2);
 			m_mainPanel.removeAll();
 			m_mainPanel.add(new RegisterPanel("findpassword"));
 			m_mainPanel.validate();
 		}
 		else if(action.equals("login"))
 		{
-			m_frame.resize(350, 180);
+			m_frame.resize(350*2, 180*2);
 			System.out.println("return to login");
 			m_mainPanel.removeAll();
 			m_mainPanel.add(new LoginPanel());
@@ -85,6 +86,7 @@ public class LoginWindow extends JFrame {
 		JButton m_loginButton = new JButton("login");
 		JButton m_registerButton = new JButton("register");
 		JButton m_findPasswordButton = new JButton("findpassword");
+		
 		@Override
 		public void actionPerformed(ActionEvent arg0) {
 			JButton source = (JButton) arg0.getSource();
@@ -116,15 +118,20 @@ public class LoginWindow extends JFrame {
 		LoginPanel()
 		{
 			setLayout(null);
-        	m_userLabel.setBounds(10,20,80,25);
-        	m_userInput.setBounds(100,20,165,25);
-        	m_passwordLabel.setBounds(10,50,80,25);
-        	m_passwordInput.setBounds(100,50,165,25);
-        	m_registerButton.setBounds(10,80,80,30);
+        	m_userLabel.setBounds(10*2,20*2,80*2,25*2);
+        	m_userLabel.setFont(new Font("",Font.BOLD,20));
+        	m_userInput.setBounds(100*2,20*2,165*2,25*2);
+        	m_passwordLabel.setBounds(10*2,50*2,80*2,25*2);
+        	m_passwordLabel.setFont(new Font("",Font.BOLD,20));
+        	m_passwordInput.setBounds(100*2,50*2,165*2,25*2);
+        	m_registerButton.setBounds(10*2,100*2,80*2,30*2);
+        	m_registerButton.setFont(new Font("",Font.BOLD,20));
         	m_registerButton.addActionListener(this);
-        	m_findPasswordButton.setBounds(110,80,80,30);
+        	m_findPasswordButton.setBounds(110*2,100*2,100*2,30*2);
+        	m_findPasswordButton.setFont(new Font("",Font.BOLD,20));
         	m_findPasswordButton.addActionListener(this);
-        	m_loginButton.setBounds(210,80,80,30);
+        	m_loginButton.setBounds(230*2,100*2,80*2,30*2);
+        	m_loginButton.setFont(new Font("",Font.BOLD,20));
         	m_loginButton.addActionListener(this);
         	add(m_userLabel);
         	add(m_userInput);
@@ -142,9 +149,9 @@ public class LoginWindow extends JFrame {
 		JTextField m_userInput = new JTextField(20);
 		JLabel m_firstPasswordLabel = new JLabel("Password:");
 		JLabel m_secondPasswordLabel = new JLabel("Password:");
-		JPasswordField m_firstPasswordInput = new JPasswordField(20);
-		JPasswordField m_secondPasswordInput = new JPasswordField(20);
-		JLabel m_securityQuestionLabel = new JLabel("Security Question: ", JLabel.CENTER);
+		JPasswordField m_firstPasswordInput = new JPasswordField(20*2);
+		JPasswordField m_secondPasswordInput = new JPasswordField(20*2);
+		JLabel m_securityQuestionLabel = new JLabel("Security Question: Your mother's birthday", JLabel.LEFT);
 		JLabel m_firstAnswerLabel = new JLabel("Answer: ");
 		JLabel m_secondAnswerLabel = new JLabel("Answer: ");
 		JPasswordField m_firstAnswerInput = new JPasswordField(20);
@@ -195,23 +202,64 @@ public class LoginWindow extends JFrame {
         	m_funcButton.setText(operation);
         	m_operation = operation;
         	setLayout(null);
-        	m_userLabel.setBounds(10,20,80,25);
-        	m_userInput.setBounds(100,20,165,25);
-        	m_firstPasswordLabel.setBounds(10,50,80,25);
-        	m_firstPasswordInput.setBounds(100,50,165,25);
-        	m_secondPasswordLabel.setBounds(10,80,80,25);
-        	m_secondPasswordInput.setBounds(100,80,165,25);
-        	m_securityQuestionLabel.setBounds(10,110,165,25);
-        	m_firstAnswerLabel.setBounds(10,140,80,25);
-        	m_firstAnswerInput.setBounds(100,140,165,25);
-        	m_secondAnswerLabel.setBounds(10,170,80,25);
-        	m_secondAnswerInput.setBounds(100,170,165,25);
-        	m_returnButton.setBounds(10,200,100,30);
+        	if(operation.equals("register")){
+        	m_userLabel.setBounds(10*2,20*2,80*2,25*2);
+        	m_userLabel.setFont(new Font("",Font.BOLD,20));
+        	m_userInput.setBounds(100*2,20*2,165*2,25*2);
+        	m_firstPasswordLabel.setBounds(10*2,50*2,80*2,25*2);
+        	m_firstPasswordLabel.setFont(new Font("",Font.BOLD,20));
+        	m_firstPasswordInput.setBounds(100*2,50*2,165*2,25*2);
+        	m_secondPasswordLabel.setBounds(10*2,80*2,80*2,25*2);
+        	m_secondPasswordLabel.setFont(new Font("",Font.BOLD,20));
+        	m_secondPasswordInput.setBounds(100*2,80*2,165*2,25*2);
+        	m_securityQuestionLabel.setBounds(10*2,110*2,220*2,25*2);
+        	m_securityQuestionLabel.setFont(new Font("",Font.BOLD,20));
+        	m_firstAnswerLabel.setBounds(10*2,140*2,80*2,25*2);
+        	m_firstAnswerLabel.setFont(new Font("",Font.BOLD,20));
+        	m_firstAnswerInput.setBounds(100*2,140*2,165*2,25*2);
+        	m_secondAnswerLabel.setBounds(10*2,170*2,80*2,25*2);
+        	m_secondAnswerLabel.setFont(new Font("",Font.BOLD,20));
+        	m_secondAnswerInput.setBounds(100*2,170*2,165*2,25*2);
+        	m_returnButton.setBounds(10*2,200*2,100*2,30*2);
+        	m_returnButton.setFont(new Font("",Font.BOLD,20));
         	m_returnButton.addActionListener(this);
-        	m_funcButton.setBounds(210,200,100,30);
+        	m_funcButton.setBounds(210*2,200*2,100*2,30*2);
+        	m_funcButton.setFont(new Font("",Font.BOLD,20));
         	m_funcButton.addActionListener(this);
-        	m_promptLabel.setBounds(0,230,350,30);
+        	m_promptLabel.setBounds(0*2,230*2,350*2,30*2);
+        	m_promptLabel.setFont(new Font("",Font.BOLD,20));
         	m_promptLabel.setVisible(false);
+        	}
+        	else{
+        		m_userLabel.setBounds(10*2,20*2,80*2,25*2);
+            	m_userLabel.setFont(new Font("",Font.BOLD,20));
+            	m_userInput.setBounds(100*2,20*2,165*2,25*2);
+            	m_securityQuestionLabel.setBounds(10*2,50*2,220*2,25*2);
+            	m_securityQuestionLabel.setFont(new Font("",Font.BOLD,20));
+            	m_firstAnswerLabel.setBounds(10*2,80*2,80*2,25*2);
+            	m_firstAnswerLabel.setFont(new Font("",Font.BOLD,20));
+            	m_firstAnswerInput.setBounds(100*2,80*2,165*2,25*2);
+            	m_secondAnswerLabel.setBounds(10*2,110*2,80*2,25*2);
+            	m_secondAnswerLabel.setFont(new Font("",Font.BOLD,20));
+            	m_secondAnswerInput.setBounds(100*2,110*2,165*2,25*2);
+            	m_firstPasswordLabel.setText("New Password:");
+            	m_firstPasswordLabel.setBounds(10*2,140*2,80*2,25*2);
+            	m_firstPasswordLabel.setFont(new Font("",Font.BOLD,20));
+            	m_firstPasswordInput.setBounds(100*2,140*2,165*2,25*2);
+            	m_secondPasswordLabel.setText("New Password:");
+            	m_secondPasswordLabel.setBounds(10*2,170*2,80*2,25*2);
+            	m_secondPasswordLabel.setFont(new Font("",Font.BOLD,20));
+            	m_secondPasswordInput.setBounds(100*2,170*2,165*2,25*2);
+            	m_returnButton.setBounds(10*2,200*2,100*2,30*2);
+            	m_returnButton.setFont(new Font("",Font.BOLD,20));
+            	m_returnButton.addActionListener(this);
+            	m_funcButton.setBounds(210*2,200*2,100*2,30*2);
+            	m_funcButton.setFont(new Font("",Font.BOLD,20));
+            	m_funcButton.addActionListener(this);
+            	m_promptLabel.setBounds(0*2,230*2,350*2,30*2);
+            	m_promptLabel.setFont(new Font("",Font.BOLD,20));
+            	m_promptLabel.setVisible(false);
+        	}
         	add(m_userLabel);
         	add(m_userInput);
         	add(m_firstPasswordLabel);
@@ -226,8 +274,12 @@ public class LoginWindow extends JFrame {
         	add(m_returnButton);
         	add(m_funcButton);
         	add(m_promptLabel);
+        	}
+        	
         }
         
-    }  
 
+	 public static Font makeFont(){
+		 return new Font("",Font.BOLD,16);
+	 }
 }
