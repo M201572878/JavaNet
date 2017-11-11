@@ -53,6 +53,7 @@ public class ClientSocket {
 	public void SendToServer(Operation operation)
 	{
 		try {
+			operation = MD5tools.makeCipherObject(operation);
 			m_objOutputStream.writeObject(operation);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
