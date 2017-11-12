@@ -149,12 +149,13 @@ public class ContactWindow extends JFrame {
 		if(m_contactStateMap.get(user).equals("online"))
 		{
 			operation.m_operationName = "onlineMsgReq";
+			m_clientSocket.SendToServer(operation);
 		}
-		else
-		{
-			operation.m_operationName = "offlineMsgReq";
-		}
-		m_clientSocket.SendToServer(operation);
+//		else
+//		{
+//			operation.m_operationName = "offlineMsgReq";
+//		}
+//		m_clientSocket.SendToServer(operation);
 	}
 	
 	public void AddUsers(String[] users, String[] userStates)
@@ -195,7 +196,16 @@ public class ContactWindow extends JFrame {
 	public void ChangeContactState(String user, String state)
 	{
 		if(!user.equals(m_user))
+		{
 			m_contactStateMap.replace(user, state);
+			if(state.equals("online") && m_openContactWindowMap.containsKey(user))
+			{
+				Operation operation = new Operation();
+				operation.m_targetUser = user;
+				operation.m_operationName = "onlineMsgReq";
+				m_clientSocket.SendToServer(operation);
+			}
+		}
 	}
 	
 	private class ContactListCellRender extends DefaultListCellRenderer{
@@ -469,7 +479,8 @@ public class ContactWindow extends JFrame {
 				{
 					str = " " + str;
 				}
-				str += '\n';
+				if(index < lines.length - 1)
+					str += '\n';
 				messageDisplay += str;
 			}
 			

@@ -44,16 +44,11 @@ public class ServerThread extends Thread
 	
 	private class OnlineUserInfo{
 		public String m_ip = null;
-		public String m_udpIp = null;
 		public int m_port = 0;
-		public int m_udpPort = 0;
-		
 		OnlineUserInfo(String ip, int port, String udpIp, int udpPort)
 		{
 			m_ip = ip;
 			m_port = port;
-			m_udpIp = udpIp;
-			m_udpPort = udpPort;
 		}
 	}
 	
@@ -253,6 +248,11 @@ public class ServerThread extends Thread
 		}
 		ArrayList<OfflineMsg> list = (ArrayList<OfflineMsg>) m_offlineMsgMap.get(m_operationObj.m_targetUser);
 		list.add(new OfflineMsg(m_operationObj.m_user, m_operationObj.m_msg));
+		System.out.println(m_operationObj.m_user);
+		System.out.println(m_operationObj.m_targetUser);
+		System.out.println(m_operationObj.m_msg);
+		m_offlineMsgMap.remove(m_operationObj.m_targetUser);
+		m_offlineMsgMap.put(m_operationObj.m_targetUser, list);
 	}
 	
 	public void DealFindPassWord()

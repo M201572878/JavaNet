@@ -45,7 +45,7 @@ public class ClientSocket {
 	public long m_finishSendTime = 0;
 	public boolean Init() {
 		try {
-			m_SocketToServer = new Socket("10.14.126.20", 8088);
+			m_SocketToServer = new Socket("192.168.13.112", 8088);
 			m_serverSocket = new ServerSocket(0);
 			m_fileServer = new DatagramSocket(0);
 			m_objOutputStream = new ObjectOutputStream(m_SocketToServer.getOutputStream());
