@@ -50,10 +50,10 @@ public class MultiTreadServer {
 			e.printStackTrace();
 		}
 		Socket socket = null;
-		ServerThread.m_userInfoMap.put("1", new UserInfo("1", MD5tools.makeCipherText("1"), "1"));
-		ServerThread.m_userInfoMap.put("2", new UserInfo("2", MD5tools.makeCipherText("2"), "2"));
-		ServerThread.m_userInfoMap.put("3", new UserInfo("3", MD5tools.makeCipherText("3"), "3"));
-		ServerThread.m_userInfoMap.put("4", new UserInfo("4", MD5tools.makeCipherText("4"), "4"));
+//		ServerThread.m_userInfoMap.put("1", new UserInfo("1", MD5tools.makeCipherText("1"), "1"));
+//		ServerThread.m_userInfoMap.put("2", new UserInfo("2", MD5tools.makeCipherText("2"), "2"));
+//		ServerThread.m_userInfoMap.put("3", new UserInfo("3", MD5tools.makeCipherText("3"), "3"));
+//		ServerThread.m_userInfoMap.put("4", new UserInfo("4", MD5tools.makeCipherText("4"), "4"));
 		ShowAllUser();
 		while(true)
 		{

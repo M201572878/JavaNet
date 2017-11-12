@@ -3,6 +3,18 @@ package TCP;
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.List;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import javax.swing.GroupLayout;
@@ -21,6 +33,7 @@ public class ServerWindow extends JFrame {
 	public static JTextArea m_allUserListTextArea = new JTextArea();
 	public static JTextArea m_onlineListTextArea = new JTextArea();
 	public static JTextArea m_serverIPTextArea = new JTextArea();
+	public static String m_fileName = "user.info";
 	
 	private JPanel mainPane;;
 
@@ -105,6 +118,98 @@ public class ServerWindow extends JFrame {
 		mainPane.add(serverIPScrollPane);
 		mainPane.add(onlineUserLabel);
 		mainPane.add(allUserListtLabel);
+		
+		//读取用户信息
+		File file = new File(m_fileName);
+		FileInputStream fileInputStream = null;
+		if(file.exists()){
+			try {
+				fileInputStream = new FileInputStream(file);
+				ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+				UserInfo userInfo = null;
+				while(fileInputStream.available()>0)
+				{
+					userInfo = (UserInfo) objectInputStream.readUnshared();
+					ServerThread.m_userInfoMap.put(userInfo.m_userName, userInfo);
+				}
+				objectInputStream.close();
+				fileInputStream.close();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		//保存用户信息
+		addWindowListener(new WindowListener() {
+			
+			@Override
+			public void windowOpened(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowIconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowDeiconified(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowDeactivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowClosing(WindowEvent e) {
+				// TODO Auto-generated method stub
+				File file = new File(m_fileName);
+				FileOutputStream fileOutputStream = null;
+				ObjectOutputStream objectOutputStream = null;
+				try {
+					fileOutputStream = new FileOutputStream(file);
+					objectOutputStream = new ObjectOutputStream(fileOutputStream);
+					for(UserInfo userInfo: ServerThread.m_userInfoMap.values())
+					{
+						objectOutputStream.writeObject(userInfo);
+					}
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				try {
+					objectOutputStream.close();
+					fileOutputStream.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			}
+			
+			@Override
+			public void windowClosed(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			@Override
+			public void windowActivated(WindowEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 	}
 	
 //	private void init()
