@@ -11,6 +11,7 @@ import java.io.ObjectOutputStream;
 import java.io.RandomAccessFile;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -44,7 +45,7 @@ public class ClientSocket {
 	public long m_finishSendTime = 0;
 	public boolean Init() {
 		try {
-			m_SocketToServer = new Socket("localhost", 8088);
+			m_SocketToServer = new Socket("10.14.126.20", 8088);
 			m_serverSocket = new ServerSocket(0);
 			m_fileServer = new DatagramSocket(0);
 			m_objOutputStream = new ObjectOutputStream(m_SocketToServer.getOutputStream());
@@ -180,6 +181,8 @@ public class ClientSocket {
 				}
 				else if(m_operationObj.m_operationName.equals("onlineMsgRsp"))
 				{
+					System.out.print(m_operationObj.m_ip);
+					System.out.print(m_operationObj.m_port);
 					ConnectToOtherClient(m_operationObj.m_targetUser, m_operationObj.m_ip, m_operationObj.m_port);
 				}
 				else if(m_operationObj.m_operationName.equals("userLoginNotify"))
@@ -448,6 +451,7 @@ public class ClientSocket {
 				            	m_fileServerThread.setM_fileSender(operation.m_user);
 				            	m_receiveFileName = operation.m_fileName;
 				            	operation2.m_msg = "agreeFileTrans";
+				            	operation2.m_udpIp = InetAddress.getLocalHost().getHostAddress();
 				            	operation2.m_udpPort = m_fileServer.getLocalPort();
 				            }
 				            else
@@ -462,7 +466,7 @@ public class ClientSocket {
 					{
 						if(operation.m_msg.equals("agreeFileTrans"))
 						{
-							SendFileThread sendFileThread = new SendFileThread(m_otherClientSocket.getInetAddress().getHostAddress(), operation.m_udpPort, operation.m_user);
+							SendFileThread sendFileThread = new SendFileThread(operation.m_udpIp, operation.m_udpPort, operation.m_user);
 							sendFileThread.start();
 						}
 						else
@@ -512,6 +516,7 @@ public class ClientSocket {
 						fileOutputStream.close();
 						DecimalFormat df = new DecimalFormat("#,###");
 						JOptionPane.showConfirmDialog(null, "file receive finish, avg speed is " + df.format(operation.m_transSpeed) + "B/S", "tips", JOptionPane.INFORMATION_MESSAGE);
+
 						//m_sendSuccessFileIndex.clear();
 						deleteAll(new File("./temp"));
 					}

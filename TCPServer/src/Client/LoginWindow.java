@@ -8,6 +8,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 import javax.management.openmbean.OpenMBeanOperationInfo;
 import javax.swing.JButton;
@@ -100,7 +102,12 @@ public class LoginWindow extends JFrame {
 	            	operation.m_operationName = "login";
 	            	operation.m_user = userName;
 	            	operation.m_password = password;
-	            	operation.m_ip = m_clientSocket.m_serverSocket.getInetAddress().getHostAddress();
+	            	try {
+						operation.m_ip = InetAddress.getLocalHost().getHostAddress();
+					} catch (UnknownHostException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					};//m_clientSocket.m_serverSocket.getInetAddress().getHostAddress();
 	            	operation.m_port = m_clientSocket.m_serverSocket.getLocalPort();
 	            	m_clientSocket.SendToServer(operation);
 	            }

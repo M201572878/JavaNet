@@ -122,7 +122,7 @@ public class ServerThread extends Thread
 				correctUserInfo.m_password.equals(m_operationObj.m_password))
 		{
 			m_user = m_operationObj.m_user;
-			String ipString = m_socket.getInetAddress().getHostAddress();
+			String ipString = m_operationObj.m_ip;
 			m_userOnlineMap.put(m_operationObj.m_user, new OnlineUserInfo(ipString, m_operationObj.m_port,
 					ipString, m_operationObj.m_udpPort));
 			SwingUtilities.invokeLater(new Runnable() {
