@@ -11,6 +11,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -20,15 +21,18 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
+import Client.MD5tools;
+
 //服务器 运行
 public class MultiTreadServer {
 	public static String m_serverSocketAddress = null;
 	public static int m_serverSocketPort = 0;
 	public static void main(String[] args) {
+		
 		ServerSocket serverSocket = null;
 		try {
 			serverSocket = new ServerSocket(8088);
-			m_serverSocketAddress = serverSocket.getInetAddress().toString();
+			m_serverSocketAddress = InetAddress.getLocalHost().getHostAddress();//serverSocket.getInetAddress().toString();
 			m_serverSocketPort = serverSocket.getLocalPort();
 			SwingUtilities.invokeLater(new Runnable() {
 	            @Override
@@ -46,10 +50,10 @@ public class MultiTreadServer {
 			e.printStackTrace();
 		}
 		Socket socket = null;
-		ServerThread.m_userInfoMap.put("1", new UserInfo("1", "1", "1"));
-		ServerThread.m_userInfoMap.put("2", new UserInfo("2", "2", "2"));
-		ServerThread.m_userInfoMap.put("3", new UserInfo("3", "3", "3"));
-		ServerThread.m_userInfoMap.put("4", new UserInfo("4", "4", "4"));
+		ServerThread.m_userInfoMap.put("1", new UserInfo("1", MD5tools.makeCipherText("1"), "1"));
+		ServerThread.m_userInfoMap.put("2", new UserInfo("2", MD5tools.makeCipherText("2"), "2"));
+		ServerThread.m_userInfoMap.put("3", new UserInfo("3", MD5tools.makeCipherText("3"), "3"));
+		ServerThread.m_userInfoMap.put("4", new UserInfo("4", MD5tools.makeCipherText("4"), "4"));
 		ShowAllUser();
 		while(true)
 		{

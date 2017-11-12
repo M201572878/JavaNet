@@ -3,6 +3,7 @@ package Client;
 import java.awt.Button;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Image;
@@ -17,7 +18,9 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +45,8 @@ import javax.swing.TransferHandler;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.xml.crypto.dsig.SignedInfo;
+
+import org.omg.CORBA.PUBLIC_MEMBER;
 
 import TCP.Operation;
 
@@ -99,6 +104,8 @@ public class ContactWindow extends JFrame {
 			}
 		});
 		
+		
+		
 		//双击用户弹出聊天窗口
 		m_userList.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent mouseEvent) {
@@ -118,12 +125,7 @@ public class ContactWindow extends JFrame {
                     	}
                     	if(!m_openContactWindowMap.containsKey(m_selectUser))
                     	{
-                    		ChatWindow chatWindow = new ChatWindow(m_selectUser);
-                    		m_openContactWindowMap.put(m_selectUser, chatWindow);
-                			Operation operation = new Operation();
-                			operation.m_targetUser = m_selectUser;
-                			operation.m_operationName = "onlineMsgReq";
-                			m_clientSocket.SendToServer(operation);
+                    		OnSendMsgToOther(m_selectUser);
                     	}
                     	else
                     	{
@@ -137,6 +139,22 @@ public class ContactWindow extends JFrame {
 		
 		add(m_userLabel);
 		add(m_userScrollPane);
+	}
+	
+	public void OnSendMsgToOther(String user){
+		ChatWindow chatWindow = new ChatWindow(user);
+		m_openContactWindowMap.put(user, chatWindow);
+		Operation operation = new Operation();
+		operation.m_targetUser = user;
+		if(m_contactStateMap.get(user).equals("online"))
+		{
+			operation.m_operationName = "onlineMsgReq";
+		}
+		else
+		{
+			operation.m_operationName = "offlineMsgReq";
+		}
+		m_clientSocket.SendToServer(operation);
 	}
 	
 	public void AddUsers(String[] users, String[] userStates)
@@ -184,6 +202,10 @@ public class ContactWindow extends JFrame {
 		public Component getListCellRendererComponent(JList list, Object value,  
 	            int index, boolean isSelected, boolean cellHasFocus) {  
 //	        super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); 
+			if(!m_contactStateMap.containsKey(value.toString()))
+			{
+				return this;
+			}
 			String contactState = m_contactStateMap.get(value.toString());
 			if(contactState.equals("online"))
 			{
@@ -229,7 +251,7 @@ public class ContactWindow extends JFrame {
 		JButton m_sendButton = new JButton("send");
 		JButton m_uploadFileButton = new JButton("send file");
 		JPanel m_operationPanel = new JPanel();
-		JLabel m_fileUploadInfo = new JLabel();
+		JLabel m_fileUploadInfo = new JLabel("<html><u>open file direcory</u></html>");
 		String m_chatTargeUser = null;
 		
 
@@ -323,14 +345,21 @@ public class ContactWindow extends JFrame {
 			m_operationPanel.setBackground(new Color(0xFFFFFF));
 			m_operationPanel.setBounds(0, 330, m_chatWidth, 60);
 			m_uploadFileButton.setBounds(0, 10, 100, 25);
-			m_fileUploadInfo.setBounds(100, 10, 300, 25);
-			m_fileUploadInfo.setVisible(false);
+			m_fileUploadInfo.setBounds(110, 10, 200, 25);
+			m_fileUploadInfo.setBackground(Color.BLUE);
+			Font font2 = new Font("宋体", Font.PLAIN, 15);
+			m_fileUploadInfo.setFont(font2);
 			m_closeButton.setBounds(m_chatWidth - 230, 10, 100, 25);
 			m_sendButton.setBounds(m_chatWidth - 120, 10, 100, 25);
 			m_uploadFileButton.addActionListener(new ActionListener() {
 				
 				@Override
 				public void actionPerformed(ActionEvent e) {
+					if(m_contactStateMap.get(m_chatTargeUser).equals("offline"))
+					{
+						JOptionPane.showConfirmDialog(null, "user is offline", "tips", JOptionPane.YES_NO_OPTION);
+						return;
+					}
 					JFileChooser jfc=new JFileChooser();
 					jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
 			        if(jfc.showOpenDialog(null)==JFileChooser.APPROVE_OPTION){
@@ -342,10 +371,49 @@ public class ContactWindow extends JFrame {
 			            	Operation operation = new Operation();
 			            	operation.m_operationName = "sendFileReq";
 			            	operation.m_user = m_user;
+			            	operation.m_port = m_clientSocket.m_serverSocket.getLocalPort();
 			            	operation.m_fileName = file.getName();
 			            	m_clientSocket.SendMessageToOtherClient(m_chatTargeUser, operation);
 			            }
 			        }
+				}
+			});
+			m_fileUploadInfo.addMouseListener(new MouseListener() {
+				@Override
+				public void mouseExited(MouseEvent e) {
+					setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));  
+				}
+				
+				@Override
+				public void mouseEntered(MouseEvent e) {
+					setCursor(Cursor.getDefaultCursor());  
+				}
+				
+				@Override
+				public void mouseClicked(MouseEvent e) {
+					try {
+						String receivePath = "./download/readme";
+						File file = new File(receivePath);  
+						if(!file.getParentFile().exists()){  
+							file.getParentFile().mkdirs(); 
+						} 
+						java.awt.Desktop.getDesktop().open(new java.io.File("./download"));
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+
+				@Override
+				public void mousePressed(MouseEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void mouseReleased(MouseEvent e) {
+					// TODO Auto-generated method stub
+					
 				}
 			});
 			m_closeButton.addActionListener(new ActionListener() {

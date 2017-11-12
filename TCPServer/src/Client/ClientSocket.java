@@ -1,14 +1,23 @@
 package Client;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.swing.JOptionPane;
@@ -27,6 +36,12 @@ public class ClientSocket {
 	public ContactWindow m_contaContactWindow = null;
 	public File m_sendFile = null;
 	public String m_receiveFileName = null;
+	public ArrayList m_sendSuccessFileIndex = new ArrayList<Integer>();
+	FileServerThread m_fileServerThread = null;
+	public static final int DATA_SIZE = 1024 * 50;
+	public static final int SEND_SIZE = DATA_SIZE + 4;
+	public long m_startSendTime = 0;
+	public long m_finishSendTime = 0;
 	public boolean Init() {
 		try {
 			m_SocketToServer = new Socket("localhost", 8088);
@@ -37,15 +52,21 @@ public class ClientSocket {
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 			JOptionPane.showMessageDialog(null, "连接失败", "tips", JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
 			return false;
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null, "连接失败", "tips", JOptionPane.ERROR_MESSAGE);
+			System.exit(0);
 			e.printStackTrace();
 			return false;
 		}finally {
 //			JOptionPane.showMessageDialog(null, "hello.");
 //			System.exit(0);
 		}
+		
+		//接收文件的线程
+		m_fileServerThread = new FileServerThread();
+		m_fileServerThread.start();
 		
 		//接收服务器消息的线程
 		ReceiveServerThread receiveServerThread = new ReceiveServerThread(this);
@@ -70,6 +91,11 @@ public class ClientSocket {
 	
 	//连接到其他客户端
 	public void ConnectToOtherClient(String otherCientUserName, String host, int port){
+		if(m_otherClientSocketMap.containsKey(otherCientUserName))
+		{
+			return;
+		}
+		
 		try {
 			Socket socetToOtherClient = new Socket(host, port);
 			m_otherClientSocketMap.put(otherCientUserName, new OtherClientSocketInfo(socetToOtherClient));
@@ -172,22 +198,67 @@ public class ClientSocket {
 		}
 	}
 	
-	
+	//文件接收
 	private class FileServerThread extends Thread{
+		String m_fileSender = null;
+		
+		public void setM_fileSender(String m_fileSender) {
+			this.m_fileSender = m_fileSender;
+		}
+		
 		@Override
 		public void run(){
 			while(true)
 			{
-				byte[] buf=new byte[1024];
-		        DatagramPacket packet=new DatagramPacket(buf, buf.length);
-		        System.out.println("I am waiting.");
+				byte[] buf=new byte[SEND_SIZE];
+		        DatagramPacket packet = new DatagramPacket(buf, buf.length);
+//		        System.out.println("I am waiting.");
 		        try {
 					m_fileServer.receive(packet);
+					FileSplitSaveThread fileSplitSaveThread = new FileSplitSaveThread(packet);
+					fileSplitSaveThread.start();
+					
+					int fileIndex = bytesToInt(packet.getData(), 0);
+					Operation operation = new Operation();
+					operation.m_operationName = "confirmFileSplit";
+					operation.m_fileIndex = fileIndex;
+					SendMessageToOtherClient(m_fileSender, operation);
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-		        byte[] mess=packet.getData();
+			}
+		}
+	}
+	
+	//文件保存线程
+	private class FileSplitSaveThread extends Thread{
+		DatagramPacket m_packet = null;
+		FileSplitSaveThread(DatagramPacket packet){
+			m_packet = packet;
+		}
+		
+		@Override
+		public void run(){
+			byte[] data = m_packet.getData();
+			int length = m_packet.getLength();
+			int fileIndex = bytesToInt(data, 0);
+			String strPath = "./temp/"+m_receiveFileName + Integer.toString(fileIndex);
+			File file = new File(strPath);  
+			if(!file.getParentFile().exists()){  
+				file.getParentFile().mkdirs(); 
+			} 
+			FileOutputStream fos = null;
+			try {
+				file.createNewFile();
+				fos = new FileOutputStream(file);
+				fos.write(data, 4, length - 4);
+		        fos.close();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 	}
@@ -209,11 +280,120 @@ public class ClientSocket {
 			}
 		}
 	}
+	   
+	public byte[] intToBytes( int value )   
+	{   
+	    byte[] src = new byte[4];  
+	    src[3] =  (byte) ((value>>24) & 0xFF);  
+	    src[2] =  (byte) ((value>>16) & 0xFF);  
+	    src[1] =  (byte) ((value>>8) & 0xFF);    
+	    src[0] =  (byte) (value & 0xFF);                  
+	    return src;   
+	}   
 	
+	public int bytesToInt(byte[] src, int offset) {  
+	    int value;    
+	    value = (int) ((src[offset] & 0xFF)   
+	            | ((src[offset+1] & 0xFF)<<8)   
+	            | ((src[offset+2] & 0xFF)<<16)   
+	            | ((src[offset+3] & 0xFF)<<24));  
+	    return value;  
+	} 
+	
+	//发送文件的线程
 	private class SendFileThread extends Thread{
+		String m_targeIp = null;
+		int m_targetPort;
+		
+		String m_fileReceiver = null;
+		SendFileThread(String ip, int port, String fileReceiver)
+		{
+			m_targeIp = ip;
+			m_targetPort = port;
+			m_fileReceiver = fileReceiver;
+		}
 		@Override
 		public void run(){
-			
+			RandomAccessFile  randomAccessFile = null;
+			DatagramSocket sendSocket = null;
+			System.out.println(m_targeIp);
+			System.out.println(m_targetPort);
+			InetSocketAddress inetSocketAddress = new InetSocketAddress(m_targeIp,  m_targetPort);
+			try {
+				randomAccessFile = new RandomAccessFile (m_sendFile, "r");
+				sendSocket = new DatagramSocket();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (SocketException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			int fileIndex = 0;
+			byte[] tempbytes = new byte[SEND_SIZE];
+			System.out.println("attemp send file");
+			int maxIndex = (int) (m_sendFile.length() / DATA_SIZE);
+			if(m_sendFile.length() % DATA_SIZE != 0)
+			{
+				maxIndex++;
+			}
+			System.out.println(maxIndex);
+			m_startSendTime = System.currentTimeMillis();
+			while(true)
+			{
+				try {
+					sleep(1);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				try {
+					if(m_sendSuccessFileIndex.size() < maxIndex)
+					{
+						for(int i = fileIndex; i < maxIndex; ++i)
+						{
+							if(!m_sendSuccessFileIndex.contains(i))
+							{
+								fileIndex = i;
+								break;
+							}
+						}
+						byte[] indexBytes = intToBytes(fileIndex);
+						randomAccessFile.seek(fileIndex * DATA_SIZE);
+						int byteRead = randomAccessFile.read(tempbytes, 4, DATA_SIZE);
+				        System.arraycopy(indexBytes, 0, tempbytes, 0, indexBytes.length); 
+						DatagramPacket sendPacket =new DatagramPacket(tempbytes, byteRead + 4, inetSocketAddress);
+		                sendSocket.send(sendPacket);
+		                fileIndex++;
+		                if(fileIndex == maxIndex)
+		                {
+		                	fileIndex = 0;
+		                }
+					}
+					else
+					{
+						m_finishSendTime = System.currentTimeMillis();
+						System.out.println(m_sendSuccessFileIndex.size());
+						m_contaContactWindow.m_fileTransState = false;
+						Operation operation = new Operation();
+						operation.m_fileIndex = maxIndex;
+						operation.m_operationName = "sendFileFinish";
+						long transSecond = ((m_finishSendTime - m_startSendTime) / 1000);
+						if(transSecond == 0)
+						{
+							transSecond = 1;
+						}
+						operation.m_transSpeed = (int) (m_sendFile.length() / transSecond);
+						SendMessageToOtherClient(m_fileReceiver, operation);
+						DecimalFormat df = new DecimalFormat("#,###");
+						JOptionPane.showConfirmDialog(null, "file send finish, avg speed is " + df.format(operation.m_transSpeed) + "B/S", "tips", JOptionPane.INFORMATION_MESSAGE);
+						m_sendSuccessFileIndex.clear();
+						break;
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
 		}
 	}
 	
@@ -240,14 +420,13 @@ public class ClientSocket {
 			{
 				try {
 					Operation operation = (Operation) m_otherClientObjInputStream.readObject();
-					System.out.println("from other client:"+operation.m_operationName + operation.m_msg);
+//					System.out.println("from other client:"+operation.m_operationName + operation.m_msg);
 					if(operation.m_operationName.equals("onlineChatWithOtherClient"))
 					{
 						m_contaContactWindow.AddMsg(operation.m_user, operation.m_msg);
 					}
 					else if(operation.m_operationName.equals("sendFileReq"))
 					{
-						m_contaContactWindow.AddMsg(operation.m_user, operation.m_msg);
 						if(m_contaContactWindow.m_fileTransState)
 						{
 							Operation operation2 = new Operation();
@@ -259,19 +438,23 @@ public class ClientSocket {
 						else
 						{
 							Operation operation2 = new Operation();
-							operation.m_operationName = "sendFileRsp";
-							operation.m_user = m_contaContactWindow.m_user;
+							operation2.m_operationName = "sendFileRsp";
+							operation2.m_user = m_contaContactWindow.m_user;
 							int ret = JOptionPane.showConfirmDialog(null, operation.m_user + "want to send file " + operation.m_fileName + ", are you sure to receive", "tips", JOptionPane.YES_NO_OPTION);
-				            if(ret == 0)
+				            ConnectToOtherClient(operation.m_user, m_otherClientSocket.getInetAddress().getHostAddress(), operation.m_port);
+							if(ret == 0)
 				            {
 				            	m_contaContactWindow.m_fileTransState = true;
-				            	operation.m_msg = "agreeFileTrans";
+				            	m_fileServerThread.setM_fileSender(operation.m_user);
 				            	m_receiveFileName = operation.m_fileName;
+				            	operation2.m_msg = "agreeFileTrans";
+				            	operation2.m_udpPort = m_fileServer.getLocalPort();
 				            }
 				            else
 				            {
-				            	operation.m_msg = m_contaContactWindow.m_user + " refused to accept the file";
+				            	operation2.m_msg = m_contaContactWindow.m_user + " refused to accept the file";
 				            }
+				            System.out.println(operation.m_user);
 							SendMessageToOtherClient(operation.m_user, operation2);
 						}
 					}
@@ -279,12 +462,58 @@ public class ClientSocket {
 					{
 						if(operation.m_msg.equals("agreeFileTrans"))
 						{
-							
+							SendFileThread sendFileThread = new SendFileThread(m_otherClientSocket.getInetAddress().getHostAddress(), operation.m_udpPort, operation.m_user);
+							sendFileThread.start();
 						}
 						else
 						{
 							JOptionPane.showConfirmDialog(null, operation.m_msg, "tips", JOptionPane.INFORMATION_MESSAGE);
 						}
+					}
+					//对方确认收到某一部分数据
+					else if(operation.m_operationName.equals("confirmFileSplit"))
+					{
+						if(!m_sendSuccessFileIndex.contains(operation.m_fileIndex))
+						{
+							m_sendSuccessFileIndex.add(operation.m_fileIndex);
+						}
+					}
+					//对方发送文件完毕
+					else if(operation.m_operationName.equals("sendFileFinish"))
+					{
+						System.out.println("sendFileFinish++++++");
+						m_contaContactWindow.m_fileTransState = false;
+						String receivePath = "./download/" + m_receiveFileName;
+						File file = new File(receivePath);  
+						if(!file.getParentFile().exists()){  
+							file.getParentFile().mkdirs(); 
+						} 
+						FileOutputStream fileOutputStream = new FileOutputStream(receivePath);
+						byte[] data = new byte[DATA_SIZE];
+						for(int i = 0 ; i < operation.m_fileIndex; ++i)
+						{
+							String strPath = "./temp/"+m_receiveFileName + Integer.toString(i);
+							System.out.println(strPath);
+							FileInputStream fileInputStream = new FileInputStream(strPath);
+							while(true)
+							{
+								int ret = fileInputStream.read(data, 0, DATA_SIZE);
+								if(ret != -1)
+								{
+									fileOutputStream.write(data, 0, ret);
+								}
+								else
+								{
+									break;
+								}
+							}
+							fileInputStream.close();
+						}
+						fileOutputStream.close();
+						DecimalFormat df = new DecimalFormat("#,###");
+						JOptionPane.showConfirmDialog(null, "file receive finish, avg speed is " + df.format(operation.m_transSpeed) + "B/S", "tips", JOptionPane.INFORMATION_MESSAGE);
+						//m_sendSuccessFileIndex.clear();
+						deleteAll(new File("./temp"));
 					}
 				} catch (ClassNotFoundException e) {
 					e.printStackTrace();
@@ -294,4 +523,23 @@ public class ClientSocket {
 			}
 		}
 	}
+	
+	public void deleteAll(File file)
+	 {
+	   if(file.isFile() || file.list().length ==0)
+	   {
+		   file.delete();     
+	   }
+	   else
+	   {    
+		   File[] files = file.listFiles();
+		   for (int i = 0; i < files.length; i++) 
+		   {
+	    	 deleteAll(files[i]);
+	    	 files[i].delete();    
+		   }
+		   if(file.exists())
+	    	  file.delete();
+	   }
+	 }
 }

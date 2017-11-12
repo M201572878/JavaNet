@@ -36,7 +36,7 @@ public class LoginWindow extends JFrame {
 	{
 		m_clientSocket = clientSocket;
 		m_clientSocket.m_loginWindow = this;
-		m_frame.setSize(350*2, 200*2);
+		m_frame.setSize(350*1, 200*1);
 		m_frame.setResizable(false);
 		m_frame.setLocation(500, 300);
         m_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -56,21 +56,21 @@ public class LoginWindow extends JFrame {
 		System.out.println(action);
 		if(action.equals("register"))
 		{
-			m_frame.resize(350*2, 300*2);
+			m_frame.resize(350*1, 300*1);
 			m_mainPanel.removeAll();
 			m_mainPanel.add(new RegisterPanel("register"));
 			m_mainPanel.validate();
 		}
 		else if(action.equals("findpassword"))
 		{
-			m_frame.resize(350*2, 300*2);
+			m_frame.resize(350*1, 300*1);
 			m_mainPanel.removeAll();
 			m_mainPanel.add(new RegisterPanel("findpassword"));
 			m_mainPanel.validate();
 		}
 		else if(action.equals("login"))
 		{
-			m_frame.resize(350*2, 180*2);
+			m_frame.resize(350*1, 180*1);
 			System.out.println("return to login");
 			m_mainPanel.removeAll();
 			m_mainPanel.add(new LoginPanel());
@@ -118,20 +118,20 @@ public class LoginWindow extends JFrame {
 		LoginPanel()
 		{
 			setLayout(null);
-        	m_userLabel.setBounds(10*2,20*2,80*2,25*2);
-        	m_userLabel.setFont(new Font("",Font.BOLD,20));
-        	m_userInput.setBounds(100*2,20*2,165*2,25*2);
-        	m_passwordLabel.setBounds(10*2,50*2,80*2,25*2);
-        	m_passwordLabel.setFont(new Font("",Font.BOLD,20));
-        	m_passwordInput.setBounds(100*2,50*2,165*2,25*2);
-        	m_registerButton.setBounds(10*2,100*2,80*2,30*2);
-        	m_registerButton.setFont(new Font("",Font.BOLD,20));
+        	m_userLabel.setBounds(10*1,20*1,80*1,25*1);
+        	m_userLabel.setFont(new Font("",Font.BOLD,12));
+        	m_userInput.setBounds(100*1,20*1,165*1,25*1);
+        	m_passwordLabel.setBounds(10*1,50*1,80*1,25*1);
+        	m_passwordLabel.setFont(new Font("",Font.BOLD,12));
+        	m_passwordInput.setBounds(100*1,50*1,165*1,25*1);
+        	m_registerButton.setBounds(10*1,100*1,80*1,30*1);
+        	m_registerButton.setFont(new Font("",Font.BOLD,12));
         	m_registerButton.addActionListener(this);
-        	m_findPasswordButton.setBounds(110*2,100*2,100*2,30*2);
-        	m_findPasswordButton.setFont(new Font("",Font.BOLD,20));
+        	m_findPasswordButton.setBounds(110*1,100*1,120*1,30*1);
+        	m_findPasswordButton.setFont(new Font("",Font.BOLD,12));
         	m_findPasswordButton.addActionListener(this);
-        	m_loginButton.setBounds(230*2,100*2,80*2,30*2);
-        	m_loginButton.setFont(new Font("",Font.BOLD,20));
+        	m_loginButton.setBounds(250*1,100*1,80*1,30*1);
+        	m_loginButton.setFont(new Font("",Font.BOLD,12));
         	m_loginButton.addActionListener(this);
         	add(m_userLabel);
         	add(m_userInput);
@@ -149,8 +149,8 @@ public class LoginWindow extends JFrame {
 		JTextField m_userInput = new JTextField(20);
 		JLabel m_firstPasswordLabel = new JLabel("Password:");
 		JLabel m_secondPasswordLabel = new JLabel("Password:");
-		JPasswordField m_firstPasswordInput = new JPasswordField(20*2);
-		JPasswordField m_secondPasswordInput = new JPasswordField(20*2);
+		JPasswordField m_firstPasswordInput = new JPasswordField(20*1);
+		JPasswordField m_secondPasswordInput = new JPasswordField(20*1);
 		JLabel m_securityQuestionLabel = new JLabel("Security Question: Your mother's birthday", JLabel.LEFT);
 		JLabel m_firstAnswerLabel = new JLabel("Answer: ");
 		JLabel m_secondAnswerLabel = new JLabel("Answer: ");
@@ -203,61 +203,61 @@ public class LoginWindow extends JFrame {
         	m_operation = operation;
         	setLayout(null);
         	if(operation.equals("register")){
-        	m_userLabel.setBounds(10*2,20*2,80*2,25*2);
-        	m_userLabel.setFont(new Font("",Font.BOLD,20));
-        	m_userInput.setBounds(100*2,20*2,165*2,25*2);
-        	m_firstPasswordLabel.setBounds(10*2,50*2,80*2,25*2);
-        	m_firstPasswordLabel.setFont(new Font("",Font.BOLD,20));
-        	m_firstPasswordInput.setBounds(100*2,50*2,165*2,25*2);
-        	m_secondPasswordLabel.setBounds(10*2,80*2,80*2,25*2);
-        	m_secondPasswordLabel.setFont(new Font("",Font.BOLD,20));
-        	m_secondPasswordInput.setBounds(100*2,80*2,165*2,25*2);
-        	m_securityQuestionLabel.setBounds(10*2,110*2,220*2,25*2);
-        	m_securityQuestionLabel.setFont(new Font("",Font.BOLD,20));
-        	m_firstAnswerLabel.setBounds(10*2,140*2,80*2,25*2);
-        	m_firstAnswerLabel.setFont(new Font("",Font.BOLD,20));
-        	m_firstAnswerInput.setBounds(100*2,140*2,165*2,25*2);
-        	m_secondAnswerLabel.setBounds(10*2,170*2,80*2,25*2);
-        	m_secondAnswerLabel.setFont(new Font("",Font.BOLD,20));
-        	m_secondAnswerInput.setBounds(100*2,170*2,165*2,25*2);
-        	m_returnButton.setBounds(10*2,200*2,100*2,30*2);
-        	m_returnButton.setFont(new Font("",Font.BOLD,20));
+        	m_userLabel.setBounds(10*1,20*1,80*1,25*1);
+        	m_userLabel.setFont(new Font("",Font.BOLD,12));
+        	m_userInput.setBounds(100*1,20*1,165*1,25*1);
+        	m_firstPasswordLabel.setBounds(10*1,50*1,80*1,25*1);
+        	m_firstPasswordLabel.setFont(new Font("",Font.BOLD,12));
+        	m_firstPasswordInput.setBounds(100*1,50*1,165*1,25*1);
+        	m_secondPasswordLabel.setBounds(10*1,80*1,80*1,25*1);
+        	m_secondPasswordLabel.setFont(new Font("",Font.BOLD,12));
+        	m_secondPasswordInput.setBounds(100*1,80*1,165*1,25*1);
+        	m_securityQuestionLabel.setBounds(10*1,110*1,240*1,25*1);
+        	m_securityQuestionLabel.setFont(new Font("",Font.BOLD,12));
+        	m_firstAnswerLabel.setBounds(10*1,140*1,80*1,25*1);
+        	m_firstAnswerLabel.setFont(new Font("",Font.BOLD,12));
+        	m_firstAnswerInput.setBounds(100*1,140*1,165*1,25*1);
+        	m_secondAnswerLabel.setBounds(10*1,170*1,80*1,25*1);
+        	m_secondAnswerLabel.setFont(new Font("",Font.BOLD,12));
+        	m_secondAnswerInput.setBounds(100*1,170*1,165*1,25*1);
+        	m_returnButton.setBounds(10*1,200*1,100*1,30*1);
+        	m_returnButton.setFont(new Font("",Font.BOLD,12));
         	m_returnButton.addActionListener(this);
-        	m_funcButton.setBounds(210*2,200*2,100*2,30*2);
-        	m_funcButton.setFont(new Font("",Font.BOLD,20));
+        	m_funcButton.setBounds(210*1,200*1,100*1,30*1);
+        	m_funcButton.setFont(new Font("",Font.BOLD,12));
         	m_funcButton.addActionListener(this);
-        	m_promptLabel.setBounds(0*2,230*2,350*2,30*2);
-        	m_promptLabel.setFont(new Font("",Font.BOLD,20));
+        	m_promptLabel.setBounds(0*1,230*1,350*1,30*1);
+        	m_promptLabel.setFont(new Font("",Font.BOLD,12));
         	m_promptLabel.setVisible(false);
         	}
         	else{
-        		m_userLabel.setBounds(10*2,20*2,80*2,25*2);
-            	m_userLabel.setFont(new Font("",Font.BOLD,20));
-            	m_userInput.setBounds(100*2,20*2,165*2,25*2);
-            	m_securityQuestionLabel.setBounds(10*2,50*2,220*2,25*2);
-            	m_securityQuestionLabel.setFont(new Font("",Font.BOLD,20));
-            	m_firstAnswerLabel.setBounds(10*2,80*2,80*2,25*2);
-            	m_firstAnswerLabel.setFont(new Font("",Font.BOLD,20));
-            	m_firstAnswerInput.setBounds(100*2,80*2,165*2,25*2);
-            	m_secondAnswerLabel.setBounds(10*2,110*2,80*2,25*2);
-            	m_secondAnswerLabel.setFont(new Font("",Font.BOLD,20));
-            	m_secondAnswerInput.setBounds(100*2,110*2,165*2,25*2);
+        		m_userLabel.setBounds(10*1,20*1,80*1,25*1);
+            	m_userLabel.setFont(new Font("",Font.BOLD,12));
+            	m_userInput.setBounds(100*1,20*1,165*1,25*1);
+            	m_securityQuestionLabel.setBounds(10*1,50*1,240*1,25*1);
+            	m_securityQuestionLabel.setFont(new Font("",Font.BOLD,12));
+            	m_firstAnswerLabel.setBounds(10*1,80*1,80*1,25*1);
+            	m_firstAnswerLabel.setFont(new Font("",Font.BOLD,12));
+            	m_firstAnswerInput.setBounds(100*1,80*1,165*1,25*1);
+            	m_secondAnswerLabel.setBounds(10*1,110*1,80*1,25*1);
+            	m_secondAnswerLabel.setFont(new Font("",Font.BOLD,12));
+            	m_secondAnswerInput.setBounds(100*1,110*1,165*1,25*1);
             	m_firstPasswordLabel.setText("New Password:");
-            	m_firstPasswordLabel.setBounds(10*2,140*2,80*2,25*2);
-            	m_firstPasswordLabel.setFont(new Font("",Font.BOLD,20));
-            	m_firstPasswordInput.setBounds(100*2,140*2,165*2,25*2);
+            	m_firstPasswordLabel.setBounds(10*1,140*1,90*1,25*1);
+            	m_firstPasswordLabel.setFont(new Font("",Font.BOLD,12));
+            	m_firstPasswordInput.setBounds(100*1,140*1,165*1,25*1);
             	m_secondPasswordLabel.setText("New Password:");
-            	m_secondPasswordLabel.setBounds(10*2,170*2,80*2,25*2);
-            	m_secondPasswordLabel.setFont(new Font("",Font.BOLD,20));
-            	m_secondPasswordInput.setBounds(100*2,170*2,165*2,25*2);
-            	m_returnButton.setBounds(10*2,200*2,100*2,30*2);
-            	m_returnButton.setFont(new Font("",Font.BOLD,20));
+            	m_secondPasswordLabel.setBounds(10*1,170*1,90*1,25*1);
+            	m_secondPasswordLabel.setFont(new Font("",Font.BOLD,12));
+            	m_secondPasswordInput.setBounds(100*1,170*1,165*1,25*1);
+            	m_returnButton.setBounds(10*1,200*1,100*1,30*1);
+            	m_returnButton.setFont(new Font("",Font.BOLD,12));
             	m_returnButton.addActionListener(this);
-            	m_funcButton.setBounds(210*2,200*2,100*2,30*2);
-            	m_funcButton.setFont(new Font("",Font.BOLD,20));
+            	m_funcButton.setBounds(210*1,200*1,120*1,30*1);
+            	m_funcButton.setFont(new Font("",Font.BOLD,12));
             	m_funcButton.addActionListener(this);
-            	m_promptLabel.setBounds(0*2,230*2,350*2,30*2);
-            	m_promptLabel.setFont(new Font("",Font.BOLD,20));
+            	m_promptLabel.setBounds(0*1,230*1,350*1,30*1);
+            	m_promptLabel.setFont(new Font("",Font.BOLD,12));
             	m_promptLabel.setVisible(false);
         	}
         	add(m_userLabel);
