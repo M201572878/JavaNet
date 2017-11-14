@@ -163,12 +163,14 @@ public class ServerThread extends Thread
 				operation3.m_operationName = "offlineMsgRsp";
 				if(m_offlineMsgMap.containsKey(m_operationObj.m_user))
 				{
+					operation3.m_msg = "";
 					for(OfflineMsg msg: (ArrayList<OfflineMsg>)m_offlineMsgMap.get(m_operationObj.m_user))
 					{
-						operation3.m_msg = msg.m_msg;
+						operation3.m_msg = operation3.m_msg+msg.m_msg+"\n";
 						operation3.m_user = msg.m_sender;
-						m_objOutputStream.writeObject(operation3);
+						
 					}
+					m_objOutputStream.writeObject(operation3);
 				}
 				
 				//广播用户上线

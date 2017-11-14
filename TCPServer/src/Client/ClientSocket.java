@@ -45,7 +45,7 @@ public class ClientSocket {
 	public long m_finishSendTime = 0;
 	public boolean Init() {
 		try {
-			m_SocketToServer = new Socket("192.168.13.112", 8088);
+			m_SocketToServer = new Socket("192.168.111.4", 8088);
 			m_serverSocket = new ServerSocket(0);
 			m_fileServer = new DatagramSocket(0);
 			m_objOutputStream = new ObjectOutputStream(m_SocketToServer.getOutputStream());
@@ -177,7 +177,11 @@ public class ClientSocket {
 				}
 				else if(m_operationObj.m_operationName.equals("offlineMsgRsp"))
 				{
-					m_contaContactWindow.AddMsg(m_operationObj.m_user, m_operationObj.m_msg);
+					String [] msgs = m_operationObj.m_msg.split("\n");
+					for(int i = 0; i < msgs.length ; ++i){
+						m_contaContactWindow.AddMsg(m_operationObj.m_user, msgs[i]);
+					}
+					
 				}
 				else if(m_operationObj.m_operationName.equals("onlineMsgRsp"))
 				{
@@ -331,7 +335,7 @@ public class ClientSocket {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} 
-			int fileIndex = 0;
+			int fileIndex = 0; int sleepSize = 0;
 			byte[] tempbytes = new byte[SEND_SIZE];
 			System.out.println("attemp send file");
 			int maxIndex = (int) (m_sendFile.length() / DATA_SIZE);
@@ -367,9 +371,16 @@ public class ClientSocket {
 						DatagramPacket sendPacket =new DatagramPacket(tempbytes, byteRead + 4, inetSocketAddress);
 		                sendSocket.send(sendPacket);
 		                fileIndex++;
+		                sleepSize++;
+		                if(sleepSize == 100)
+		                {
+		                	sleepSize = 0;
+		                	sleep(1);
+		                }
 		                if(fileIndex == maxIndex)
 		                {
 		                	fileIndex = 0;
+		                	sleep(1);
 		                }
 					}
 					else
@@ -392,7 +403,7 @@ public class ClientSocket {
 						m_sendSuccessFileIndex.clear();
 						break;
 					}
-				} catch (IOException e) {
+				} catch (IOException | InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
